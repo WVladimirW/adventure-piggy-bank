@@ -1394,9 +1394,11 @@ async function attemptLogin(username, pin, silent){
     const data = await cloudLogin(username, pin);
     session = { username, pin };
     saveSession(session);
-    if(data.state && Object.keys(data.state).length){
-      state = Object.assign(defaultState(), data.state);
-    }
+    // Always rebuild from a clean default + whatever the server sent back.
+    // (Previously this only ran when data.state was non-empty, so a brand-new
+    // profile silently kept whatever the last-logged-in account had left in
+    // memory/localStorage — amount, theme, character and all.)
+    state = Object.assign(defaultState(), data.state || {});
     migrateState();
     document.getElementById("userBadge").textContent = "👤 " + username;
     showApp();
@@ -1424,6 +1426,7 @@ loginPinInput.addEventListener("keydown", (e)=>{
 document.getElementById("logoutBtn").addEventListener("click", ()=>{
   if(!confirm("Выйти из профиля «" + (session ? session.username : "") + "» на этом устройстве?")) return;
   clearSession();
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
   location.reload();
 });
 

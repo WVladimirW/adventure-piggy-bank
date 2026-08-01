@@ -10,7 +10,8 @@
 -- ============================================================
 
 -- нужно для безопасного хранения PIN-кода (bcrypt-хэш, не открытым текстом)
-create extension if not exists pgcrypto;
+-- в Supabase это расширение обычно ставится в схему "extensions", а не "public"
+create extension if not exists pgcrypto with schema extensions;
 
 -- одна строка = один ребёнок/профиль
 create table if not exists players (
@@ -34,7 +35,7 @@ create or replace function login_or_create(p_username text, p_pin text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   rec players%rowtype;
@@ -68,7 +69,7 @@ create or replace function save_player_state(p_username text, p_pin text, p_stat
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   rec players%rowtype;
