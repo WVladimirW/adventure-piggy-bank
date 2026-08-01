@@ -444,9 +444,9 @@ let session = null; // {username, pin} once logged in this tab
 
 async function cloudLogin(username, pin){
   const { data, error } = await supa.rpc("login_or_create", { p_username: username, p_pin: pin });
-  if(error){ const e = new Error("Сервер ответил ошибкой: " + (error.message || JSON.stringify(error))); e.code = "network"; throw e; }
+  if(error){ const e = new Error("Сервер відповів помилкою: " + (error.message || JSON.stringify(error))); e.code = "network"; throw e; }
   if(!data.ok){
-    const e = new Error(data.error === "wrong_pin" ? "Неверный код для этого имени" : "Ошибка входа: " + data.error);
+    const e = new Error(data.error === "wrong_pin" ? "Невірний код для цього імені" : "Помилка входу: " + data.error);
     e.code = data.error || "unknown";
     throw e;
   }
@@ -768,7 +768,7 @@ function drawRewardMarker(g,rp,isNight){
   const claimed = !!state.claimedRewards[rp.amount];
   el("circle",{cx:p.x,cy:p.y,r:24,fill: reached? "#ffe066":"#fff8e6", stroke:"#e0672e","stroke-width":3.5,filter:"url(#pathShadow)"},g);
   el("text",{x:p.x,y:p.y+7,"text-anchor":"middle","font-size":19},g).textContent = claimed ? "✅" : "🎁";
-  const label = rp.amount.toLocaleString("ru-RU")+" ₴";
+  const label = rp.amount.toLocaleString("ua-UA")+" ₴";
   const pillW = Math.max(50, label.length*6.6);
   el("rect",{x:p.x-pillW/2,y:p.y+30,width:pillW,height:18,rx:9,fill:isNight?"#243452":"#fff","stroke":"#e0672e","stroke-width":1.6},g);
   el("text",{x:p.x,y:p.y+43,"text-anchor":"middle","font-size":10.5,"font-family":"Baloo 2","font-weight":800,fill:isNight?"#eef1f7":"#a8451c"},g).textContent = label;
@@ -891,7 +891,7 @@ function renderMapStatic(){
   const startPt = PATH.pts[0];
   const finishPt = PATH.pts[PATH.pts.length-1];
   drawSignpost(camGroup, startPt.x, startPt.y-18, "СТАРТ", isNight);
-  drawSignpost(camGroup, finishPt.x, finishPt.y-18, "ФИНИШ", isNight);
+  drawSignpost(camGroup, finishPt.x, finishPt.y-18, "ФІНІШ", isNight);
   el("text",{x:finishPt.x, y:finishPt.y-58, "text-anchor":"middle","font-size":22},camGroup).textContent="🎉";
 
   // small decorative dots
@@ -912,7 +912,7 @@ function renderMapStatic(){
   applyCamera(pos, 1);
 
   const goalBadge = document.getElementById("goalBadgeVal");
-  if(goalBadge) goalBadge.textContent = state.settings.goalAmount.toLocaleString("ru-RU")+" ₴";
+  if(goalBadge) goalBadge.textContent = state.settings.goalAmount.toLocaleString("ua-UA")+" ₴";
 }
 
 function applyCamera(center, zoom){
@@ -979,7 +979,7 @@ function renderDotsGlowOnly(){
 
 /* ============ REWARD / BONUS LOGIC ============ */
 function todayStr(){
-  return new Date().toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric"});
+  return new Date().toLocaleDateString("ua-UA",{day:"2-digit",month:"2-digit",year:"numeric"});
 }
 let pendingQueue = [];
 function collectCelebrations(newAmount){
@@ -1003,14 +1003,14 @@ function showNextCelebration(){
   const item = pendingQueue[0];
   if(item.type==="reward"){
     document.getElementById("rewardBig").textContent = "🎉";
-    document.getElementById("rewardTitle").textContent = "Поздравляем!";
-    document.getElementById("rewardText").textContent = `Ты накопил ${item.amount.toLocaleString("ru-RU")} ₴! Подойди к родителям и получи награду ${item.reward.toLocaleString("ru-RU")} ₴.`;
+    document.getElementById("rewardTitle").textContent = "Вітаємо!";
+    document.getElementById("rewardText").textContent = `Ти назбирав ${item.amount.toLocaleString("ua-UA")} ₴! Підійди до батьків і отримай нагороду ${item.reward.toLocaleString("ua-UA")} ₴.`;
     const overlay = document.getElementById("rewardOverlay");
     overlay.classList.remove("hidden");
     overlay.dataset.amt = item.amount;
   }else{
-    document.getElementById("bonusText").textContent = `Ты накопил ${item.amount.toLocaleString("ru-RU")} ₴ и нашёл сундук! Что выберешь?`;
-    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " экрана";
+    document.getElementById("bonusText").textContent = `Ти назбирав ${item.amount.toLocaleString("ua-UA")} ₴ і знайшов скриню! Що обереш?`;
+    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " екрану";
     const overlay = document.getElementById("bonusOverlay");
     overlay.classList.remove("hidden");
     overlay.dataset.amt = item.amount;
@@ -1036,8 +1036,8 @@ function claimBonus(choice){
     date: todayStr(), kind:"bonus", delta:0,
     icon: choice==="treat" ? "🍬" : "⏱",
     comment: choice==="treat"
-      ? `Сундук на ${amt.toLocaleString("ru-RU")} ₴ — выбрал сладость`
-      : `Сундук на ${amt.toLocaleString("ru-RU")} ₴ — выбрал экранное время: ${minutesLabel}`
+      ? `Скриня на ${amt.toLocaleString("ua-UA")} ₴ — вибрав смаколики`
+      : `Скриня на ${amt.toLocaleString("ua-UA")} ₴ — обрав екранний час: ${minutesLabel}`
   });
   saveState();
   overlay.classList.add("hidden");
@@ -1061,7 +1061,7 @@ function showToast(msg){
 function renderHistory(){
   const list = document.getElementById("historyList");
   if(state.history.length===0){
-    list.innerHTML = '<div class="emptyhist">Пока нет записей — обнови сумму, чтобы начать историю.</div>';
+    list.innerHTML = '<div class="emptyhist">Поки що немає записів — віднови суму, щоб розпочати історію.</div>';
     return;
   }
   list.innerHTML = "";
@@ -1069,16 +1069,16 @@ function renderHistory(){
     const row = document.createElement("div");
     row.className = "hitem";
     const sign = h.delta>0 ? "+" : "";
-    row.innerHTML = `<span><span class="date">${h.date}</span><br>${h.comment}</span><span class="delta ${h.delta>=0?'plus':'minus'}">${sign}${h.delta.toLocaleString("ru-RU")} ₴</span>`;
+    row.innerHTML = `<span><span class="date">${h.date}</span><br>${h.comment}</span><span class="delta ${h.delta>=0?'plus':'minus'}">${sign}${h.delta.toLocaleString("ua-UA")} ₴</span>`;
     list.appendChild(row);
   });
 }
 
 function renderStats(){
-  document.getElementById("statAmount").textContent = state.amount.toLocaleString("ru-RU")+" ₴";
-  document.getElementById("statGoal").textContent = state.settings.goalAmount.toLocaleString("ru-RU")+" ₴";
+  document.getElementById("statAmount").textContent = state.amount.toLocaleString("ua-UA")+" ₴";
+  document.getElementById("statGoal").textContent = state.settings.goalAmount.toLocaleString("ua-UA")+" ₴";
   const nextReward = state.settings.rewardPoints.slice().sort((a,b)=>a.amount-b.amount).find(rp=>rp.amount>state.amount);
-  document.getElementById("statNext").textContent = nextReward ? (nextReward.amount-state.amount).toLocaleString("ru-RU")+" ₴" : "Цель достигнута! 🎉";
+  document.getElementById("statNext").textContent = nextReward ? (nextReward.amount-state.amount).toLocaleString("ua-UA")+" ₴" : "Ціль досягнута! 🎉";
   document.getElementById("amountInput").value = state.amount;
 }
 
@@ -1094,7 +1094,7 @@ function applyNewAmount(newAmount, comment){
   if(newAmount === state.amount) return;
   const prev = state.amount;
   const delta = newAmount - prev;
-  state.history.push({date: new Date().toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric"}), delta, comment: comment || (delta>0?"Пополнение":"Списание")});
+  state.history.push({date: new Date().toLocaleDateString("ua-UA",{day:"2-digit",month:"2-digit",year:"numeric"}), delta, comment: comment || (delta>0?"Поповнення":"Списання")});
   saveState();
   animateTo(newAmount, ()=>{
     renderAll();
@@ -1107,14 +1107,14 @@ document.getElementById("applyBtn").addEventListener("click", ()=>{
   if(animating) return;
   const v = Number(document.getElementById("amountInput").value);
   if(isNaN(v)) return;
-  applyNewAmount(v, "Ручной ввод суммы");
+  applyNewAmount(v, "Ручне введення суми");
 });
 
 document.querySelectorAll(".stepbtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     if(animating) return;
     const d = Number(btn.dataset.d);
-    applyNewAmount(state.amount + d, (d>0?"+":"")+d.toLocaleString("ru-RU")+" ₴ кнопкой");
+    applyNewAmount(state.amount + d, (d>0?"+":"")+d.toLocaleString("ua-UA")+" ₴ кнопкою");
   });
 });
 
@@ -1125,7 +1125,7 @@ document.getElementById("dnBtn").addEventListener("click", ()=>{
   state.settings.dayNightMode = next;
   saveState();
   applyDayNight();
-  showToast(next==="auto" ? "🌤️ Режим: авто" : next==="day" ? "☀️ Режим: день" : "🌙 Режим: ночь");
+  showToast(next==="auto" ? "🌤️ Режим: авто" : next==="day" ? "☀️ Режим: день" : "🌙 Режим: ніч");
 });
 
 function applyDayNight(){
@@ -1185,12 +1185,12 @@ function computeAchievements(){
   const rp = state.settings.rewardPoints;
   const bp = state.settings.bonusPoints;
   const list = [
-    {id:"firstreward", name:"Первая награда получена", done: rp.some(r=>state.claimedRewards[r.amount])},
-    {id:"halfway", name:"Пройдена половина пути", done: state.maxT >= 0.5},
-    {id:"allrewards", name:"Получены все денежные награды", done: rp.length>0 && rp.every(r=>state.claimedRewards[r.amount])},
-    {id:"allchests", name:"Открыты все сундуки", done: bp.length>0 && bp.every(b=>state.claimedBonuses[b.amount])},
-    {id:"goal", name:"Цель достигнута", done: state.amount >= state.settings.goalAmount},
-    {id:"mapdone", name:"Пройден весь путь на карте", done: state.maxT >= 0.999},
+    {id:"firstreward", name:"Першу нагороду отримано", done: rp.some(r=>state.claimedRewards[r.amount])},
+    {id:"halfway", name:"Пройдено половину шляху", done: state.maxT >= 0.5},
+    {id:"allrewards", name:"Отримано всі грошові нагороди", done: rp.length>0 && rp.every(r=>state.claimedRewards[r.amount])},
+    {id:"allchests", name:"Відкрито всі скрині", done: bp.length>0 && bp.every(b=>state.claimedBonuses[b.amount])},
+    {id:"goal", name:"Ціль досягнута", done: state.amount >= state.settings.goalAmount},
+    {id:"mapdone", name:"Пройдено весь шлях на карті", done: state.maxT >= 0.999},
   ];
   return list;
 }
@@ -1222,7 +1222,7 @@ document.getElementById("pinSubmit").addEventListener("click", ()=>{
     renderAdminRewardRows();
     renderAdminBonusRows();
   }else{
-    showToast("Неверный PIN");
+    showToast("Невірний PIN");
   }
 });
 
@@ -1284,9 +1284,9 @@ document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
   if(newPin){
     state.settings.adminPin = newPin;
     document.getElementById("adminNewPin").value = "";
-    showToast("Настройки сохранены, PIN обновлён");
+    showToast("Налаштування збережені, PIN оновлено");
   }else{
-    showToast("Настройки сохранены");
+    showToast("Налаштування збережені");
   }
 
   saveState();
@@ -1295,22 +1295,22 @@ document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
   renderAll();
 });
 document.getElementById("adminResetProgress").addEventListener("click", ()=>{
-  if(!confirm("Сбросить прогресс: сумма, история и путь на карте обнулятся. Продолжить?")) return;
+  if(!confirm("Скинути прогрес: суму, історію та шлях на карті буде анульовано. Продовжити?")) return;
   state.amount = state.settings.startAmount;
   state.maxT = 0;
   state.history = [];
   state.claimedBonuses = {};
   saveState();
   renderAll();
-  showToast("Прогресс сброшен");
+  showToast("Прогрес скинуто");
 });
 document.getElementById("adminResetRewards").addEventListener("click", ()=>{
-  if(!confirm("Сбросить полученные награды и открытые сундуки?")) return;
+  if(!confirm("Скинути отримані нагороди та відкриті скрині?")) return;
   state.claimedRewards = {};
   state.claimedBonuses = {};
   saveState();
   renderAll();
-  showToast("Награды и сундуки сброшены");
+  showToast("Нагороди та скрині скинуто");
 });
 document.getElementById("adminExport").addEventListener("click", ()=>{
   const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
@@ -1332,9 +1332,9 @@ document.getElementById("adminImportFile").addEventListener("change", (e)=>{
       state = Object.assign(defaultState(), imported);
       saveState();
       renderAll();
-      showToast("Прогресс импортирован");
+      showToast("Прогрес імпортовано");
     }catch(err){
-      showToast("Не удалось прочитать файл");
+      showToast("Не вдалося прочитати файл");
     }
   };
   reader.readAsText(file);
@@ -1379,15 +1379,15 @@ async function attemptLogin(username, pin, silent){
   pin = (pin || "").trim();
   if(!silent) loginError.textContent = "";
   if(!username){
-    if(!silent) loginError.textContent = "Введи имя";
+    if(!silent) loginError.textContent = "Введи імʼя";
     return;
   }
   if(!/^\d{6}$/.test(pin)){
-    if(!silent) loginError.textContent = "Код должен состоять ровно из 6 цифр";
+    if(!silent) loginError.textContent = "Код має складатися рівно з 6 цифр";
     return;
   }
   if(!silent){
-    loginError.textContent = "Входим…";
+    loginError.textContent = "Входимо…";
     document.getElementById("loginSubmitBtn").disabled = true;
   }
   try{
@@ -1405,10 +1405,10 @@ async function attemptLogin(username, pin, silent){
     if(data.created){ saveState(); } // push the fresh profile up right away
   }catch(e){
     if(!silent){
-      loginError.textContent = e.message || "Не удалось войти. Проверь подключение к интернету.";
+      loginError.textContent = e.message || "Не вдалося увійти. Перевір підключення до інтернету.";
       document.getElementById("loginSubmitBtn").disabled = false;
     }else if(e.code === "wrong_pin"){
-      loginError.textContent = "Сохранённый код больше не подходит — введи его ещё раз.";
+      loginError.textContent = "Збережений код більше не підходить — введи його ще раз.";
       loginPinInput.value = "";
       loginPinInput.focus();
     }else{
@@ -1424,7 +1424,7 @@ loginPinInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter") document.getElementById("loginSubmitBtn").click();
 });
 document.getElementById("logoutBtn").addEventListener("click", ()=>{
-  if(!confirm("Выйти из профиля «" + (session ? session.username : "") + "» на этом устройстве?")) return;
+  if(!confirm("Вийти з профілю «" + (session ? session.username : "") + "» на цьому пристрої?")) return;
   clearSession();
   try{ localStorage.removeItem(STORE_KEY); }catch(e){}
   location.reload();
@@ -1443,7 +1443,7 @@ if(!cloudConfigured()){
   const remembered = loadSession();
   if(remembered){
     loginUsernameInput.value = remembered.username;
-    loginError.textContent = "Входим…";
+    loginError.textContent = "Входимо…";
     attemptLogin(remembered.username, remembered.pin, true);
   }
 }
