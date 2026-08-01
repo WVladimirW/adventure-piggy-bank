@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Копилка приключений — МВП</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --sky-top:#8ecae6; --sky-bottom:#c9e9f5;
+    --sky-top-n:#1b2a4a; --sky-bottom-n:#2f4266;
+    --meadow-1:#a7c957; --meadow-2:#7fa64a; --meadow-dark:#4a6b2c;
+    --path-fill:#e9c896; --path-edge:#c99a5b;
+    --ink:#2f3a1f; --ink-soft:#5c6b45;
+    --card:#fffaf0; --card-edge:#e7dcc0;
+    --sun:#ffb703; --coin:#f3a712;
+    --accent:#e0672e; --accent-dark:#a8451c;
+    --glow:#ffe066;
+    --radius-lg:20px; --radius-md:14px; --radius-sm:9px;
+    --shadow:0 6px 0 rgba(0,0,0,0.08);
+    color-scheme: light;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;font-family:'Nunito',sans-serif;background:linear-gradient(180deg,var(--sky-top),var(--sky-bottom));color:var(--ink);overflow:hidden;}
+  body.night{background:linear-gradient(180deg,var(--sky-top-n),var(--sky-bottom-n));color:#eef1f7;}
+  h1,h2,h3,.display{font-family:'Baloo 2',sans-serif;}
+  .wrap{max-width:1800px;height:100vh;margin:0 auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap;}
+  .main{flex:1 1 auto;min-height:0;display:flex;gap:14px;}
+  .mapcol{flex:1.8 1 0;min-width:0;display:flex;flex-direction:column;min-height:0;}
+  .sidecol{flex:1 1 0;min-width:300px;max-width:420px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;padding-right:2px;}
+  @media (max-width: 860px){
+    body{overflow-y:auto;}
+    .wrap{height:auto;min-height:100vh;}
+    .main{flex-direction:column;}
+    .mapcol{min-height:52vh;}
+    .sidecol{max-width:none;overflow-y:visible;}
+  }
+  .title{font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px;}
+  .title .badge{background:var(--sun);color:#4a3200;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;}
+  .topbtns{display:flex;gap:8px;}
+  .iconbtn{border:none;background:var(--card);border:2px solid var(--card-edge);border-radius:12px;width:42px;height:42px;font-size:18px;cursor:pointer;box-shadow:var(--shadow);}
+  .iconbtn:active{transform:translateY(2px);box-shadow:none;}
+
+  .statline{display:flex;gap:10px;flex-wrap:wrap;flex:0 0 auto;}
+  .stat{background:var(--card);border:2px solid var(--card-edge);border-radius:var(--radius-md);padding:8px 16px;box-shadow:var(--shadow);flex:1;min-width:140px;}
+  .stat .lbl{font-size:12px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .stat .val{font-family:'Baloo 2';font-size:22px;font-weight:800;color:var(--accent-dark);}
+  body.night .stat{background:#1e2a45;border-color:#33415f;}
+  body.night .stat .val{color:#ffd08a;}
+  body.night .stat .lbl{color:#a9b6d0;}
+
+  .mapcard{background:var(--card);border:3px solid var(--card-edge);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);position:relative;flex:1 1 auto;min-height:0;}
+  body.night .mapcard{background:#182338;border-color:#33415f;}
+  .mapcard svg{display:block;width:100%;height:100%;touch-action:pan-y;}
+  .zoomctrls{position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:6px;}
+  .zoomctrls button{width:34px;height:34px;border-radius:8px;border:2px solid var(--card-edge);background:var(--card);font-weight:800;cursor:pointer;}
+  body.night .zoomctrls button{background:#1e2a45;border-color:#33415f;color:#eef1f7;}
+  .goalBadge{position:absolute;top:10px;right:10px;background:#1d3a8f;color:#fff;border:2px solid #ffd23f;border-radius:12px;padding:6px 12px;font-family:'Baloo 2';font-weight:800;font-size:13px;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
+
+  .panel{background:var(--card);border:2px solid var(--card-edge);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);flex:0 0 auto;}
+  .panel.grow{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  body.night .panel{background:#1e2a45;border-color:#33415f;}
+  .panel h2{margin:0 0 10px;font-size:16px;flex:0 0 auto;}
+
+  .amtrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .amtrow input[type=number]{font-family:'Baloo 2';font-size:22px;font-weight:800;width:150px;padding:8px 10px;border-radius:10px;border:2px solid var(--card-edge);text-align:center;color:var(--accent-dark);}
+  .setbtn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:800;font-family:'Baloo 2';cursor:pointer;box-shadow:0 4px 0 var(--accent-dark);}
+  .setbtn:active{transform:translateY(3px);box-shadow:none;}
+
+  .steppers{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+  .stepgroup{display:flex;flex-direction:column;gap:6px;}
+  .stepgroup .lbl{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  body.night .stepgroup .lbl{color:#a9b6d0;}
+  .stepbtns{display:flex;gap:6px;}
+  .stepbtn{border:2px solid var(--card-edge);background:#fff;border-radius:9px;padding:7px 11px;font-weight:800;cursor:pointer;font-family:'Nunito';font-size:13px;}
+  .stepbtn.minus{color:#a8451c;}
+  .stepbtn.plus{color:#2b6b34;}
+  body.night .stepbtn{background:#243452;border-color:#33415f;color:#eef1f7;}
+
+  .history{flex:1 1 auto;min-height:80px;overflow-y:auto;}
+  .hitem{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px dashed var(--card-edge);font-size:14px;}
+  .hitem:last-child{border-bottom:none;}
+  .hitem .delta.plus{color:#2b6b34;font-weight:800;}
+  .hitem .delta.minus{color:#a8451c;font-weight:800;}
+  .hitem .date{color:var(--ink-soft);font-size:12px;}
+  body.night .hitem{border-color:#33415f;}
+  body.night .hitem .date{color:#a9b6d0;}
+  .emptyhist{color:var(--ink-soft);font-size:14px;padding:8px 0;}
+
+  .overlay{position:fixed;inset:0;background:rgba(20,20,10,0.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  .modal{background:var(--card);border-radius:var(--radius-lg);padding:26px 24px;max-width:360px;width:100%;text-align:center;border:3px solid var(--sun);box-shadow:0 10px 0 rgba(0,0,0,0.15);}
+  .modal .big{font-size:44px;margin-bottom:6px;}
+  .modal h3{margin:0 0 8px;font-size:20px;}
+  .modal p{margin:0 0 18px;color:var(--ink-soft);line-height:1.5;}
+  .modal button{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 26px;font-weight:800;font-family:'Baloo 2';font-size:16px;cursor:pointer;box-shadow:0 4px 0 var(--accent-dark);}
+  body.night .modal{background:#1e2a45;}
+  body.night .modal p{color:#c3ccdf;}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2f3a1f;color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;z-index:60;box-shadow:0 6px 16px rgba(0,0,0,0.25);max-width:90vw;text-align:center;}
+
+  .choiceBtns{display:flex;gap:10px;}
+  .choiceBtn{flex:1;border:none;border-radius:12px;padding:12px 10px;font-weight:800;font-family:'Baloo 2';font-size:14px;cursor:pointer;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
+  .choiceBtn.treat{background:#e0568f;}
+  .choiceBtn.screen{background:#2f8fc2;}
+  .choiceBtn:active{transform:translateY(3px);box-shadow:none;}
+
+  .charGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-top:4px;}
+  .charCard{border:2px solid var(--card-edge);border-radius:12px;padding:8px 6px;text-align:center;cursor:pointer;background:#fff;}
+  .charCard.selected{border-color:var(--accent);background:#fff3e8;}
+  .charCard svg{width:56px;height:56px;display:block;margin:0 auto;}
+  .charCard .cname{font-size:12px;font-weight:700;margin-top:4px;color:var(--ink-soft);}
+  body.night .charCard{background:#243452;border-color:#33415f;}
+  body.night .charCard.selected{background:#33415f;border-color:#ffb703;}
+  body.night .charCard .cname{color:#a9b6d0;}
+
+  .admin-overlay{position:fixed;inset:0;background:rgba(20,20,10,0.55);display:flex;align-items:flex-start;justify-content:center;z-index:70;padding:30px 14px;overflow-y:auto;}
+  .admin-modal{background:var(--card);border-radius:var(--radius-lg);padding:22px 22px 26px;max-width:420px;width:100%;}
+  body.night .admin-modal{background:#1e2a45;}
+  .admin-modal h2{margin-top:0;}
+  .admin-modal label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin:12px 0 4px;}
+  body.night .admin-modal label{color:#a9b6d0;}
+  .admin-modal input[type=text],.admin-modal input[type=number],.admin-modal input[type=password]{width:100%;padding:9px 10px;border-radius:9px;border:2px solid var(--card-edge);font-size:15px;font-family:'Nunito';}
+  .admin-row{display:flex;gap:8px;}
+  .admin-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .admin-actions button{flex:1;min-width:130px;border:2px solid var(--card-edge);background:#fff;border-radius:10px;padding:9px 8px;font-weight:700;cursor:pointer;font-size:13px;}
+  body.night .admin-actions button{background:#243452;border-color:#33415f;color:#eef1f7;}
+  .admin-actions button.danger{color:#a8451c;border-color:#e5b9a2;}
+  .admin-close{margin-top:16px;width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-weight:800;cursor:pointer;}
+  .admin-note{font-size:12px;color:var(--ink-soft);margin-top:14px;line-height:1.5;}
+  body.night .admin-note{color:#a9b6d0;}
+  .apTable{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
+  .apRow{display:flex;gap:6px;align-items:center;}
+  .apRow input[type=number],.apRow input[type=text]{width:0;flex:1;padding:7px 8px;font-size:14px;border-radius:8px;border:2px solid var(--card-edge);}
+  .apRow .apUnit{font-size:12px;color:var(--ink-soft);white-space:nowrap;flex:0 0 auto;}
+  body.night .apRow .apUnit{color:#a9b6d0;}
+  .apRow .apDel{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:2px solid #e5b9a2;background:#fff;color:#a8451c;font-weight:800;cursor:pointer;padding:0;}
+  body.night .apRow .apDel{background:#243452;}
+  .apAddBtn{width:100%;margin:6px 0 14px;border:2px dashed var(--card-edge);background:transparent;border-radius:9px;padding:8px;font-weight:700;cursor:pointer;color:var(--ink-soft);font-size:13px;}
+  body.night .apAddBtn{color:#a9b6d0;border-color:#33415f;}
+  .hidden{display:none !important;}
+  .loginField{width:100%;padding:11px 12px;border-radius:10px;border:2px solid var(--card-edge);margin-bottom:10px;font-size:16px;text-align:center;font-family:'Nunito';}
+  .loginError{color:#a8451c;font-size:13px;min-height:18px;margin:0 0 6px;}
+  body.night .loginField{background:#243452;border-color:#33415f;color:#eef1f7;}
+  .footnote{text-align:center;color:rgba(255,255,255,0.85);font-size:12px;margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="title">🧭 Копилка приключений <span class="badge" id="themeBadge">Классика</span> <span class="badge hidden" id="userBadge">☁️</span></div>
+    <div class="topbtns">
+      <button class="iconbtn hidden" id="logoutBtn" title="Сменить профиль">🚪</button>
+      <button class="iconbtn" id="charBtn" title="Выбрать персонажа">🧑</button>
+      <button class="iconbtn" id="dnBtn" title="День / ночь">🌤️</button>
+      <button class="iconbtn" id="achBtn" title="Достижения">🏆</button>
+      <button class="iconbtn" id="adminBtn" title="Админ-панель">⚙️</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="mapcol">
+      <div class="mapcard">
+        <svg id="mapSvg" viewBox="0 0 1900 950" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="goalBadge">🏆 ЦЕЛЬ: <span id="goalBadgeVal">0 ₴</span></div>
+        <div class="zoomctrls">
+          <button id="zoomOutBtn" title="Вся карта">🔍−</button>
+          <button id="zoomFitBtn" title="К персонажу">🎯</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidecol">
+      <div class="statline">
+        <div class="stat"><div class="lbl">Накоплено</div><div class="val" id="statAmount">0 ₴</div></div>
+        <div class="stat"><div class="lbl">Цель</div><div class="val" id="statGoal">0 ₴</div></div>
+        <div class="stat"><div class="lbl">До точки</div><div class="val" id="statNext">—</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Сколько накоплено сейчас?</h2>
+        <div class="amtrow">
+          <input type="number" id="amountInput" step="1">
+          <button class="setbtn" id="applyBtn">Обновить →</button>
+        </div>
+        <div class="steppers">
+          <div class="stepgroup"><span class="lbl">Добавить</span>
+            <div class="stepbtns">
+              <button class="stepbtn plus" data-d="50">+50</button>
+              <button class="stepbtn plus" data-d="100">+100</button>
+              <button class="stepbtn plus" data-d="200">+200</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel grow">
+        <h2>История</h2>
+        <div class="history" id="historyList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="rewardOverlay" class="overlay hidden">
+  <div class="modal">
+    <div class="big" id="rewardBig">🎉</div>
+    <h3 id="rewardTitle">Поздравляем!</h3>
+    <p id="rewardText">Подойди к родителям и получи награду.</p>
+    <button id="rewardClaimBtn">Забрать 🎁</button>
+  </div>
+</div>
+
+<div id="bonusOverlay" class="overlay hidden">
+  <div class="modal">
+    <div class="big">📦</div>
+    <h3>Мистический сундук!</h3>
+    <p id="bonusText">Ты нашёл сундук! Что выберешь?</p>
+    <div class="choiceBtns">
+      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Сладость</button>
+      <button id="bonusScreenBtn" class="choiceBtn screen">⏱ <span id="bonusScreenLabel">экран</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="charOverlay" class="overlay hidden">
+  <div class="modal" style="max-width:460px;">
+    <h3>🧑 Выбери своего героя</h3>
+    <div class="charGrid" id="charGrid"></div>
+    <button id="charCloseBtn" style="margin-top:14px;">Закрыть</button>
+  </div>
+</div>
+
+<div id="achOverlay" class="overlay hidden">
+  <div class="modal" style="max-width:420px;">
+    <h3>🏆 Достижения</h3>
+    <div id="achList" style="text-align:left;"></div>
+    <button id="achCloseBtn" style="margin-top:14px;">Закрыть</button>
+  </div>
+</div>
+
+<div id="adminOverlay" class="admin-overlay hidden">
+  <div class="admin-modal">
+    <h2>⚙️ Админ-панель</h2>
+    <div id="adminLockView">
+      <label for="pinInput">PIN-код</label>
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="••••">
+      <div class="admin-actions"><button id="pinSubmit" style="flex:none;">Войти</button></div>
+      <p class="admin-note">PIN по умолчанию: 1234</p>
+    </div>
+    <div id="adminUnlockedView" class="hidden">
+      <label>Стартовая сумма</label>
+      <input type="number" id="adminStart">
+      <label>Финишная сумма (цель)</label>
+      <input type="number" id="adminGoal">
+
+      <label>Денежные награды — сумма → сколько выдать</label>
+      <div class="apTable" id="rewardRows"></div>
+      <button type="button" class="apAddBtn" id="addRewardRow">+ Добавить точку награды</button>
+
+      <label>Бонусные сундуки — сумма → что предложить вместо сладости</label>
+      <div class="apTable" id="bonusRows"></div>
+      <button type="button" class="apAddBtn" id="addBonusRow">+ Добавить точку сундука</button>
+
+      <label>Новый PIN администратора (необязательно)</label>
+      <input type="text" id="adminNewPin" inputmode="numeric" placeholder="оставь пустым, чтобы не менять">
+
+      <div class="admin-actions">
+        <button id="adminSaveSettings">💾 Сохранить</button>
+      </div>
+      <div class="admin-actions">
+        <button id="adminResetProgress" class="danger">↺ Сбросить прогресс</button>
+        <button id="adminResetRewards" class="danger">↺ Сбросить награды</button>
+      </div>
+      <div class="admin-actions">
+        <button id="adminExport">⬇ Экспорт</button>
+        <button id="adminImportBtn">⬆ Импорт</button>
+        <input type="file" id="adminImportFile" accept="application/json" class="hidden">
+      </div>
+      <p class="admin-note">Изменение стартовой/финишной суммы не пересчитывает уже сохранённый прогресс — для полного сброса используйте «Сбросить прогресс». Пустые или задвоенные строки в таблицах при сохранении игнорируются.</p>
+    </div>
+    <button class="admin-close" id="adminCloseBtn">Закрыть</button>
+  </div>
+</div>
+
+<div id="loginOverlay" class="overlay hidden">
+  <div class="modal" style="max-width:360px;">
+    <div class="big">☁️</div>
+    <h3>Вход в игру</h3>
+    <p id="loginIntro">Придумай имя и код из 6 цифр — прогресс сохранится в облаке и будет на месте на любом устройстве.</p>
+    <input type="text" id="loginUsername" class="loginField" placeholder="Имя" autocomplete="off">
+    <input type="password" id="loginPin" class="loginField" placeholder="Код из 6 цифр" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
+    <p id="loginError" class="loginError"></p>
+    <button id="loginSubmitBtn">Войти / создать профиль</button>
+  </div>
+</div>
+
+<div id="toastHolder"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ CONFIG (все игровые данные — здесь, отдельно от логики) ============ */
+const BONUS_GROUPS = [
+  {vals:[3100,3200,3300,3400,3600,3700,3800,3900], label:"30 минут"},
+  {vals:[4100,4200,4300,4400,4600,4700,4800,4900], label:"1 час"},
+  {vals:[5100,5200,5300,5400,5600,5700,5800,5900], label:"1 час 30 минут"},
+  {vals:[6100,6200,6300,6400,6600,6700,6800,6900], label:"2 часа"},
+  {vals:[7100,7200,7300,7400,7600,7700,7800,7900], label:"2 часа 30 минут"},
+  {vals:[8100,8200,8300,8400,8600,8700,8800,8900], label:"3 часа"},
+  {vals:[9100,9200,9300,9400,9600,9700,9800,9900], label:"3 часа"}
+];
+
+const CONFIG = {
+  startAmount: 3000,
+  goalAmount: 10000,
+  // Эти значения — только НАЧАЛЬНЫЕ значения по умолчанию.
+  // Реальные суммы редактируются в админ-панели и хранятся в state.settings.
+  defaultRewardPoints: [
+    {amount:3500, reward:100}, {amount:4000, reward:200}, {amount:4500, reward:100},
+    {amount:5000, reward:200}, {amount:5500, reward:100}, {amount:6000, reward:200},
+    {amount:6500, reward:100}, {amount:7000, reward:200}, {amount:7500, reward:100},
+    {amount:8000, reward:200}, {amount:8500, reward:100}, {amount:9000, reward:200},
+    {amount:9500, reward:100}, {amount:10000, reward:1000}
+  ],
+  defaultBonusPoints: BONUS_GROUPS.flatMap(g=> g.vals.map(v=>({amount:v, minutesLabel:g.label}))),
+  animDurationMs: 6000,
+  adminPinDefault: "1234",
+  // декоративные объекты сцены — рисуются векторно (не эмодзи), координаты в долях ширины/высоты
+  scenery: [
+    {type:"mesa", x:0.05, y:0.09, scale:1.3},
+    {type:"mesa", x:0.95, y:0.07, scale:1.15},
+    {type:"cloud", x:0.28, y:0.05, scale:0.85},
+    {type:"cloud", x:0.68, y:0.06, scale:0.7},
+    {type:"cactus", x:0.13, y:0.24, scale:1.0},
+    {type:"cactus", x:0.34, y:0.11, scale:0.75},
+    {type:"skull", x:0.48, y:0.15, scale:1.0},
+    {type:"crate", x:0.4, y:0.3, scale:0.9},
+    {type:"cactus", x:0.6, y:0.2, scale:0.9},
+    {type:"mine", x:0.52, y:0.44, scale:1.15},
+    {type:"crate", x:0.62, y:0.52, scale:0.8},
+    {type:"cactus", x:0.04, y:0.5, scale:0.85},
+    {type:"skull", x:0.19, y:0.63, scale:0.75},
+    {type:"oasis", x:0.93, y:0.55, rx:0.055, ry:0.09},
+    {type:"cactus", x:0.76, y:0.68, scale:0.9},
+    {type:"crate", x:0.28, y:0.86, scale:0.85},
+    {type:"mesa", x:0.48, y:0.92, scale:1.05},
+    {type:"cactus", x:0.14, y:0.9, scale:0.7}
+  ],
+  // оригинальные, вдохновлённые аркадными "бойцовскими" играми чиби-персонажи (без копирования чужого дизайна)
+  characters: [
+    {id:"spark",  name:"Спаркс", bodyColor:"#ff9645", accent:"#2b2b2b", hair:"#2f3a1f", accessory:"goggles"},
+    {id:"luna",   name:"Луна",   bodyColor:"#a586f0", accent:"#5b3fb0", hair:"#fdf6e3", accessory:"cathood"},
+    {id:"rocco",  name:"Рокко",  bodyColor:"#f0d6a8", accent:"#4a8c3f", hair:"#5c3a22", accessory:"bandana"},
+    {id:"pixie",  name:"Пикси",  bodyColor:"#ffb3c6", accent:"#ff6f91", hair:"#ffd23f", accessory:"wand"},
+    {id:"duke",   name:"Дюк",    bodyColor:"#b7c2cc", accent:"#7a8a99", hair:"#2b2b2b", accessory:"antenna"}
+  ]
+};
+
+/* ============ STORAGE ============ */
+const STORE_KEY = "savings_game_state_v1";
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function defaultState(){
+  return {
+    settings:{
+      startAmount: CONFIG.startAmount,
+      goalAmount: CONFIG.goalAmount,
+      adminPin: CONFIG.adminPinDefault,
+      dayNightMode:"auto",
+      characterId: CONFIG.characters[0].id,
+      rewardPoints: CONFIG.defaultRewardPoints.map(r=>({amount:r.amount, reward:r.reward})),
+      bonusPoints: CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, minutesLabel:b.minutesLabel}))
+    },
+    amount: CONFIG.startAmount,
+    maxT: 0,
+    history: [],
+    claimedRewards: {},
+    claimedBonuses: {},
+    achievements: {}
+  };
+}
+function migrateState(){
+  // fills in fields that older / freshly-fetched saves might be missing
+  if(!state.settings) state.settings = {};
+  if(!Array.isArray(state.settings.rewardPoints)) state.settings.rewardPoints = CONFIG.defaultRewardPoints.map(r=>({amount:r.amount, reward:r.reward}));
+  if(!Array.isArray(state.settings.bonusPoints)) state.settings.bonusPoints = CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, minutesLabel:b.minutesLabel}));
+  if(!state.claimedBonuses) state.claimedBonuses = {};
+  if(!state.claimedRewards) state.claimedRewards = {};
+  if(!state.history) state.history = [];
+  if(typeof state.amount !== "number") state.amount = state.settings.startAmount;
+  if(typeof state.maxT !== "number") state.maxT = 0;
+  if(!state.settings.characterId) state.settings.characterId = CONFIG.characters[0].id;
+  if(!state.settings.startAmount) state.settings.startAmount = CONFIG.startAmount;
+  if(!state.settings.goalAmount) state.settings.goalAmount = CONFIG.goalAmount;
+  if(!state.settings.adminPin) state.settings.adminPin = CONFIG.adminPinDefault;
+  if(!state.settings.dayNightMode) state.settings.dayNightMode = "auto";
+}
+let state = loadState() || defaultState();
+migrateState();
+
+/* ============ CLOUD SYNC (Supabase) ============
+   Each child logs in once with a name + 6-digit PIN. From then on this
+   browser remembers them (see SESSION_KEY below) and every change is pushed
+   to your Supabase project, so the same profile shows up with fresh data on
+   any device/browser they log into later.
+
+   ONE-TIME SETUP (see supabase-setup.sql + HOSTING_SETUP.md that shipped
+   alongside this file):
+     1. Create a free project at https://supabase.com
+     2. Run supabase-setup.sql once in its SQL editor
+     3. Paste your Project URL + anon public key below
+*/
+const CLOUD_CONFIG = {
+  supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co/rest/v1/",
+  supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
+};
+function cloudConfigured(){
+  return CLOUD_CONFIG.supabaseUrl.indexOf("YOUR-PROJECT")===-1 &&
+         CLOUD_CONFIG.supabaseAnonKey.indexOf("YOUR-ANON")===-1 &&
+         typeof window.supabase !== "undefined";
+}
+let supa = null;
+if(cloudConfigured()){
+  supa = window.supabase.createClient(CLOUD_CONFIG.supabaseUrl, CLOUD_CONFIG.supabaseAnonKey);
+}
+const SESSION_KEY = "savings_game_session_v1"; // remembers {username,pin} on THIS browser only
+function loadSession(){
+  try{ const raw = localStorage.getItem(SESSION_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function saveSession(sess){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(sess)); }catch(e){} }
+function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
+let session = null; // {username, pin} once logged in this tab
+
+async function cloudLogin(username, pin){
+  const { data, error } = await supa.rpc("login_or_create", { p_username: username, p_pin: pin });
+  if(error){ const e = new Error("Не удалось связаться с сервером"); e.code = "network"; throw e; }
+  if(!data.ok){
+    const e = new Error(data.error === "wrong_pin" ? "Неверный код для этого имени" : "Ошибка входа");
+    e.code = data.error || "unknown";
+    throw e;
+  }
+  return data; // {ok, created, state}
+}
+let cloudSaveInFlight = null;
+async function cloudSave(){
+  if(!supa || !session) return;
+  try{ await supa.rpc("save_player_state", { p_username: session.username, p_pin: session.pin, p_state: state }); }
+  catch(e){ /* offline / temporary glitch — the local copy already has the latest data */ }
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+  if(supa && session){ cloudSave(); }
+}
+
+/* ============ PATH ENGINE ============ */
+// SVG_W/SVG_H are measured from the actual map card size so the drawing
+// always fills the card exactly (no leftover white bars top/bottom).
+let SVG_W = 1600, SVG_H = 900;
+// The route itself is authored in a fixed reference space, then fitted
+// (scaled + centred, with generous padding) into whatever SVG_W×SVG_H turns
+// out to be. This guarantees every marker, sign and the character always
+// stay fully inside the visible card, no matter the window's aspect ratio.
+const REF_W = 1600, REF_H = 900;
+
+function sampleSpiral(pts, cxN,cyN, rStart,rEnd, angleStart, turns, dir, steps){
+  const minDim = Math.min(REF_W, REF_H);
+  for(let i=0;i<=steps;i++){
+    const s = i/steps;
+    const angle = angleStart + dir*turns*2*Math.PI*s;
+    const r = rStart + (rEnd-rStart)*s;
+    pts.push({ x: cxN*REF_W + r*minDim*Math.cos(angle), y: cyN*REF_H + r*minDim*Math.sin(angle) });
+  }
+}
+function sampleQuadratic(pts, p0,pc,p1, steps){
+  for(let i=1;i<=steps;i++){
+    const s = i/steps, inv = 1-s;
+    pts.push({
+      x: inv*inv*p0.x + 2*inv*s*pc.x + s*s*p1.x,
+      y: inv*inv*p0.y + 2*inv*s*pc.y + s*s*p1.y
+    });
+  }
+}
+function loopStartPoint(cxN,cyN,rStart,angleStart){
+  const minDim = Math.min(REF_W, REF_H);
+  return { x: cxN*REF_W + rStart*minDim*Math.cos(angleStart), y: cyN*REF_H + rStart*minDim*Math.sin(angleStart) };
+}
+function bridge(pts, from, to, bulgeFrac, steps){
+  const ctrl = { x:(from.x+to.x)/2, y:(from.y+to.y)/2 - bulgeFrac*REF_H };
+  sampleQuadratic(pts, from, ctrl, to, steps||50);
+}
+
+// The route is built as three open loops (not tight coils) plus a final
+// sweeping stretch to the finish — echoing a classic board-game map: a small
+// loop near the start, one big loop across the middle, a tighter accent loop,
+// then a clean run home. zoneBounds records where each coloured chapter ends
+// (by point index) so both the ribbon and the markers can be tinted per
+// chapter, like the reference.
+function buildPath(){
+  const pts = [];
+  const zoneBounds = [];
+
+  sampleSpiral(pts, 0.15,0.30, 0.19,0.12, Math.PI*0.92, 0.82, 1, 150);
+  zoneBounds.push(pts.length-1);
+
+  const bStart = loopStartPoint(0.53,0.40, 0.33, Math.PI*1.08);
+  bridge(pts, pts[pts.length-1], bStart, 0.11);
+  sampleSpiral(pts, 0.53,0.40, 0.33,0.18, Math.PI*1.08, 1.0, 1, 260);
+  zoneBounds.push(pts.length-1);
+
+  const cStart = loopStartPoint(0.27,0.78, 0.13, -0.55);
+  bridge(pts, pts[pts.length-1], cStart, 0.09);
+  sampleSpiral(pts, 0.27,0.78, 0.13,0.06, -0.55, 1.25, 1, 170);
+  zoneBounds.push(pts.length-1);
+
+  const finishPt = { x: 0.93*REF_W, y: 0.85*REF_H };
+  bridge(pts, pts[pts.length-1], finishPt, -0.05, 90);
+  zoneBounds.push(pts.length-1);
+
+  // fit the whole route into the real canvas, centred, with padding on every
+  // side (extra at the top for the start/finish signposts standing above
+  // their point) — this is what guarantees nothing ever renders outside the
+  // map card, whatever the window's proportions are.
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  pts.forEach(p=>{
+    if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x;
+    if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y;
+  });
+  const padTop = 0.15*SVG_H, padBottom = 0.11*SVG_H, padSide = 0.09*SVG_W;
+  const availW = Math.max(50, SVG_W - 2*padSide), availH = Math.max(50, SVG_H - padTop - padBottom);
+  const rawW = Math.max(1, maxX-minX), rawH = Math.max(1, maxY-minY);
+  const scale = Math.min(availW/rawW, availH/rawH);
+  const offX = padSide + (availW - rawW*scale)/2 - minX*scale;
+  const offY = padTop + (availH - rawH*scale)/2 - minY*scale;
+  const fitted = pts.map(p=>({ x:p.x*scale+offX, y:p.y*scale+offY }));
+
+  const cum = [0];
+  for(let i=1;i<fitted.length;i++){
+    const dx = fitted[i].x-fitted[i-1].x, dy = fitted[i].y-fitted[i-1].y;
+    cum.push(cum[i-1] + Math.sqrt(dx*dx+dy*dy));
+  }
+  const total = cum[cum.length-1];
+  const zoneTs = zoneBounds.map(idx=> cum[idx]/total);
+  return {pts:fitted, cum, total, zoneTs, zoneIdx:zoneBounds};
+}
+let PATH; // built once real map size is measured (see initGeometry below)
+
+const ZONE_STYLES = [
+  {fillDim:"#eaf6d8", fillBright:"#c8ea9c", stroke:"#5b9a3f"},
+  {fillDim:"#fff3d0", fillBright:"#ffe08a", stroke:"#d99a2b"},
+  {fillDim:"#f1e6fb", fillBright:"#d9b9f7", stroke:"#8a4fd1"},
+  {fillDim:"#e3f3fb", fillBright:"#a9dcf2", stroke:"#2f8fc2"}
+];
+function zoneStyleForT(t){
+  for(let i=0;i<PATH.zoneTs.length;i++){
+    if(t <= PATH.zoneTs[i] + 0.0005) return ZONE_STYLES[i];
+  }
+  return ZONE_STYLES[ZONE_STYLES.length-1];
+}
+
+// amount <-> t: simple linear mapping between start and goal.
+// Reward/treat markers are placed on top of this by their own amount — editing
+// them in the admin panel never has to touch the shape of the path itself.
+function amountToT(amount){
+  const a0 = state.settings.startAmount, a1 = state.settings.goalAmount;
+  if(a1 <= a0) return amount >= a1 ? 1 : 0;
+  return Math.max(0, Math.min(1, (amount-a0)/(a1-a0)));
+}
+function tToPoint(t){
+  t = Math.max(0, Math.min(1, t));
+  const target = t * PATH.total;
+  let lo=0, hi=PATH.cum.length-1;
+  while(lo<hi){
+    const mid=(lo+hi)>>1;
+    if(PATH.cum[mid] < target) lo=mid+1; else hi=mid;
+  }
+  const i = Math.max(1, lo);
+  const p0 = PATH.pts[i-1], p1 = PATH.pts[i];
+  const d0 = PATH.cum[i-1], d1 = PATH.cum[i];
+  const f = d1===d0 ? 0 : (target-d0)/(d1-d0);
+  return { x: p0.x + (p1.x-p0.x)*f, y: p0.y + (p1.y-p0.y)*f };
+}
+
+/* ============ RENDER: MAP ============ */
+const svgNS = "http://www.w3.org/2000/svg";
+const mapSvg = document.getElementById("mapSvg");
+const mapCardEl = mapSvg.closest(".mapcard");
+
+function el(tag, attrs, parent){
+  const e = document.createElementNS(svgNS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+
+function measureSvgSize(){
+  const r = mapCardEl.getBoundingClientRect();
+  const w = Math.max(200, r.width), h = Math.max(200, r.height);
+  SVG_H = 900;
+  SVG_W = Math.round(SVG_H * (w/h));
+}
+
+function initGeometry(){
+  measureSvgSize();
+  PATH = buildPath();
+}
+
+let charEl, camGroup;
+
+const BG_BLOBS = [
+  {x:0.16,y:0.22,rx:0.17,ry:0.15},{x:0.62,y:0.16,rx:0.14,ry:0.11},
+  {x:0.86,y:0.62,rx:0.16,ry:0.17},{x:0.30,y:0.80,rx:0.13,ry:0.11},
+  {x:0.55,y:0.66,rx:0.19,ry:0.14},{x:0.06,y:0.75,rx:0.10,ry:0.10}
+];
+const STARS = Array.from({length:50}, (_,i)=>({
+  x: (i*53.7 % 100)/100, y: (i*31.3 % 90)/100, r: 1+((i*17)%3)
+}));
+
+/* ---- small vector scenery icons (kept simple, own colour palette) ---- */
+function iconTree(g,cx,cy,scale){
+  const u = SVG_H*0.10*scale;
+  el("ellipse",{cx,cy:cy+u*0.85,rx:u*0.55,ry:u*0.13,fill:"rgba(0,0,0,0.12)"},g);
+  el("rect",{x:cx-u*0.07,y:cy+u*0.1,width:u*0.14,height:u*0.55,rx:u*0.05,fill:"#8a5a34"},g);
+  el("circle",{cx:cx-u*0.32,cy:cy+u*0.02,r:u*0.36,fill:"#5f9c40"},g);
+  el("circle",{cx:cx+u*0.32,cy:cy+u*0.02,r:u*0.36,fill:"#5f9c40"},g);
+  el("circle",{cx,cy:cy-u*0.22,r:u*0.48,fill:"#72b350"},g);
+}
+function iconAppleTree(g,cx,cy,scale){
+  iconTree(g,cx,cy,scale);
+  const u = SVG_H*0.10*scale;
+  [[-0.28,-0.14],[0.22,-0.26],[0.0,0.02],[0.32,0.06],[-0.08,-0.34]].forEach(([dx,dy])=>{
+    el("circle",{cx:cx+dx*u,cy:cy+dy*u,r:u*0.09,fill:"#e0472c"},g);
+  });
+}
+function iconBush(g,cx,cy,scale){
+  const u = SVG_H*0.06*scale;
+  el("ellipse",{cx,cy:cy+u*0.45,rx:u*0.9,ry:u*0.16,fill:"rgba(0,0,0,0.10)"},g);
+  el("circle",{cx:cx-u*0.4,cy,r:u*0.48,fill:"#68a944"},g);
+  el("circle",{cx:cx+u*0.4,cy,r:u*0.48,fill:"#68a944"},g);
+  el("circle",{cx,cy:cy-u*0.22,r:u*0.52,fill:"#7bbd52"},g);
+}
+function iconPond(g,cx,cy,rxFrac,ryFrac){
+  const rx = rxFrac*SVG_W, ry = ryFrac*SVG_H;
+  el("ellipse",{cx,cy,rx:rx*1.1,ry:ry*1.1,fill:"#bfe6a8"},g);
+  el("ellipse",{cx,cy,rx,ry,fill:"#4fa8cc"},g);
+  el("ellipse",{cx,cy,rx:rx*0.88,ry:ry*0.88,fill:"#72c1e0"},g);
+  el("path",{d:`M ${cx-rx*0.4} ${cy-ry*0.08} Q ${cx} ${cy-ry*0.32} ${cx+rx*0.4} ${cy-ry*0.08}`, stroke:"#fff","stroke-width":Math.max(2,rx*0.05), fill:"none", opacity:0.55},g);
+}
+function iconBarn(g,cx,cy,scale){
+  const u = SVG_H*0.17*scale;
+  el("ellipse",{cx,cy:cy+u*0.62,rx:u*0.62,ry:u*0.12,fill:"rgba(0,0,0,0.12)"},g);
+  el("rect",{x:cx-u*0.5,y:cy-u*0.15,width:u,height:u*0.75,fill:"#c0392b"},g);
+  el("path",{d:`M ${cx-u*0.6} ${cy-u*0.15} L ${cx} ${cy-u*0.65} L ${cx+u*0.6} ${cy-u*0.15} Z`, fill:"#7a2e22"},g);
+  el("rect",{x:cx-u*0.14,y:cy+u*0.2,width:u*0.28,height:u*0.4,fill:"#fdf6e3"},g);
+  el("circle",{cx,cy:cy-u*0.28,r:u*0.12,fill:"#fdf6e3"},g);
+}
+function iconMountain(g,cx,cy,scale){
+  const u = SVG_H*0.22*scale;
+  el("path",{d:`M ${cx-u} ${cy+u*0.4} L ${cx-u*0.25} ${cy-u*0.5} L ${cx+u*0.15} ${cy-u*0.05} L ${cx+u*0.5} ${cy-u*0.55} L ${cx+u} ${cy+u*0.4} Z`, fill:"#93a6ae"},g);
+  el("path",{d:`M ${cx-u*0.25} ${cy-u*0.5} L ${cx-u*0.05} ${cy-u*0.28} L ${cx-u*0.4} ${cy-u*0.18} Z`, fill:"#eef4f6"},g);
+  el("path",{d:`M ${cx+u*0.5} ${cy-u*0.55} L ${cx+u*0.68} ${cy-u*0.32} L ${cx+u*0.3} ${cy-u*0.22} Z`, fill:"#eef4f6"},g);
+}
+function iconCastle(g,cx,cy,scale){
+  const u = SVG_H*0.14*scale;
+  el("rect",{x:cx-u*0.55,y:cy-u*0.15,width:u*1.1,height:u*0.75,fill:"#b9a08a"},g);
+  [-1,1].forEach(s=>{
+    el("rect",{x:cx+s*u*0.55-u*0.16,y:cy-u*0.65,width:u*0.32,height:u*0.75,fill:"#a68c74"},g);
+  });
+  el("rect",{x:cx-u*0.12,y:cy+u*0.15,width:u*0.24,height:u*0.45,fill:"#5c4632"},g);
+  el("path",{d:`M ${cx-u*0.13} ${cy+u*0.16} q ${u*0.13} ${-u*0.22} ${u*0.26} 0`, fill:"none", stroke:"#5c4632","stroke-width":u*0.05},g);
+}
+function iconRock(g,cx,cy,scale){
+  const u = SVG_H*0.045*scale;
+  el("ellipse",{cx,cy:cy+u*0.35,rx:u,ry:u*0.75,fill:"#9aa3a0"},g);
+  el("ellipse",{cx:cx-u*0.25,cy:cy+u*0.12,rx:u*0.5,ry:u*0.4,fill:"#b7bfbb"},g);
+}
+function iconFlowerPatch(g,cx,cy,scale){
+  const u = SVG_H*0.032*scale;
+  const cols=["#ff6f91","#ffd23f","#ff9f45","#c76bf0","#ff6f91","#ffd23f"];
+  const offs=[[-1.5,0.3],[-0.7,-0.4],[0,0.5],[0.7,-0.3],[1.5,0.2],[0.2,-0.6]];
+  offs.forEach(([dx,dy],i)=>{
+    el("circle",{cx:cx+dx*u,cy:cy+dy*u,r:u*0.5,fill:cols[i]},g);
+    el("circle",{cx:cx+dx*u,cy:cy+dy*u,r:u*0.17,fill:"#fff6d8"},g);
+  });
+}
+function iconCloud(g,cx,cy,scale){
+  const u = SVG_H*0.055*scale;
+  el("ellipse",{cx:cx-u*0.6,cy,rx:u*0.6,ry:u*0.4,fill:"#fff",opacity:0.92},g);
+  el("ellipse",{cx:cx+u*0.5,cy:cy+u*0.05,rx:u*0.7,ry:u*0.45,fill:"#fff",opacity:0.92},g);
+  el("ellipse",{cx,cy:cy-u*0.2,rx:u*0.75,ry:u*0.5,fill:"#fff",opacity:0.92},g);
+}
+function iconCactus(g,cx,cy,scale){
+  const u = SVG_H*0.1*scale;
+  el("ellipse",{cx,cy:cy+u*0.5,rx:u*0.34,ry:u*0.09,fill:"rgba(0,0,0,0.18)"},g);
+  el("rect",{x:cx-u*0.12,y:cy-u*0.5,width:u*0.24,height:u*1.0,rx:u*0.12,fill:"#4f9350"},g);
+  el("circle",{cx:cx-u*0.24,cy:cy-u*0.02,r:u*0.14,fill:"#4f9350"},g);
+  el("rect",{x:cx-u*0.36,y:cy-u*0.26,width:u*0.16,height:u*0.3,rx:u*0.08,fill:"#4f9350"},g);
+  el("circle",{cx:cx+u*0.26,cy:cy-u*0.18,r:u*0.14,fill:"#4f9350"},g);
+  el("rect",{x:cx+u*0.18,y:cy-u*0.44,width:u*0.16,height:u*0.28,rx:u*0.08,fill:"#4f9350"},g);
+  el("line",{x1:cx-u*0.02,y1:cy-u*0.4,x2:cx-u*0.02,y2:cy+u*0.4,stroke:"#3d7a3e","stroke-width":u*0.03},g);
+}
+function iconSkull(g,cx,cy,scale){
+  const u = SVG_H*0.065*scale;
+  el("ellipse",{cx,cy:cy+u*0.4,rx:u*0.55,ry:u*0.12,fill:"rgba(0,0,0,0.18)"},g);
+  el("circle",{cx,cy,r:u*0.5,fill:"#e9dcc0"},g);
+  el("rect",{x:cx-u*0.28,y:cy+u*0.18,width:u*0.56,height:u*0.28,rx:u*0.1,fill:"#e9dcc0"},g);
+  el("circle",{cx:cx-u*0.2,cy:cy-u*0.03,r:u*0.14,fill:"#6b5636"},g);
+  el("circle",{cx:cx+u*0.2,cy:cy-u*0.03,r:u*0.14,fill:"#6b5636"},g);
+  el("path",{d:`M ${cx} ${cy+u*0.12} l ${u*0.08} ${u*0.16} l ${-u*0.16} 0 z`, fill:"#6b5636"},g);
+}
+function iconCrate(g,cx,cy,scale){
+  const u = SVG_H*0.06*scale;
+  el("ellipse",{cx,cy:cy+u*0.5,rx:u*0.5,ry:u*0.1,fill:"rgba(0,0,0,0.16)"},g);
+  el("rect",{x:cx-u*0.45,y:cy-u*0.4,width:u*0.9,height:u*0.8,fill:"#a9713f",stroke:"#7a5028","stroke-width":u*0.06},g);
+  el("line",{x1:cx-u*0.45,y1:cy-u*0.4,x2:cx+u*0.45,y2:cy+u*0.4,stroke:"#7a5028","stroke-width":u*0.05},g);
+  el("line",{x1:cx+u*0.45,y1:cy-u*0.4,x2:cx-u*0.45,y2:cy+u*0.4,stroke:"#7a5028","stroke-width":u*0.05},g);
+}
+function iconMesa(g,cx,cy,scale){
+  const u = SVG_H*0.24*scale;
+  el("path",{d:`M ${cx-u} ${cy+u*0.4} L ${cx-u*0.7} ${cy-u*0.35} L ${cx+u*0.7} ${cy-u*0.35} L ${cx+u} ${cy+u*0.4} Z`, fill:"#b5652f"},g);
+  el("path",{d:`M ${cx-u*0.7} ${cy-u*0.35} L ${cx-u*0.55} ${cy-u*0.5} L ${cx+u*0.55} ${cy-u*0.5} L ${cx+u*0.7} ${cy-u*0.35} Z`, fill:"#c97a3c"},g);
+  el("path",{d:`M ${cx-u} ${cy+u*0.4} L ${cx-u*0.7} ${cy-u*0.35} L ${cx-u*0.45} ${cy-u*0.3} L ${cx-u*0.72} ${cy+u*0.4} Z`, fill:"#93511f", opacity:0.45},g);
+}
+function iconOasis(g,cx,cy,rxFrac,ryFrac){
+  iconPond(g,cx,cy,rxFrac,ryFrac);
+  const u = SVG_H*0.13, px = cx - rxFrac*SVG_W*1.15, py = cy;
+  el("rect",{x:px-u*0.05,y:py-u*0.5,width:u*0.1,height:u*0.55,fill:"#8a5a34"},g);
+  [-40,0,40,-75,75].forEach(rot=>{
+    el("ellipse",{cx:px,cy:py-u*0.5,rx:u*0.34,ry:u*0.12,fill:"#4f9350",transform:`rotate(${rot} ${px} ${py-u*0.5})`},g);
+  });
+}
+function iconMine(g,cx,cy,scale){
+  const u = SVG_H*0.15*scale;
+  el("path",{d:`M ${cx-u*0.6} ${cy+u*0.4} L ${cx-u*0.5} ${cy-u*0.2} Q ${cx} ${cy-u*0.55} ${cx+u*0.5} ${cy-u*0.2} L ${cx+u*0.6} ${cy+u*0.4} Z`, fill:"#8a5a6f"},g);
+  el("ellipse",{cx,cy:cy+u*0.15,rx:u*0.3,ry:u*0.35,fill:"#2b1a33"},g);
+  [[-0.15,0],[0.1,-0.1],[0.02,0.15]].forEach(([dx,dy])=>{
+    el("circle",{cx:cx+dx*u,cy:cy+dy*u,r:u*0.08,fill:"#c084f5"},g);
+  });
+}
+const SCENERY_FNS = {tree:iconTree,appletree:iconAppleTree,bush:iconBush,barn:iconBarn,mountain:iconMountain,castle:iconCastle,rock:iconRock,flowerpatch:iconFlowerPatch,cloud:iconCloud,cactus:iconCactus,skull:iconSkull,crate:iconCrate,mesa:iconMesa,mine:iconMine};
+function drawScenery(g,item){
+  const cx = item.x*SVG_W, cy = item.y*SVG_H;
+  if(item.type==="pond"){ iconPond(g,cx,cy,item.rx,item.ry); return; }
+  if(item.type==="oasis"){ iconOasis(g,cx,cy,item.rx,item.ry); return; }
+  const fn = SCENERY_FNS[item.type];
+  if(fn) fn(g,cx,cy,item.scale||1);
+}
+function drawSignpost(g,x,y,label,isNight){
+  const u = SVG_H*0.1;
+  el("rect",{x:x-u*0.045,y:y-u*0.02,width:u*0.09,height:u*0.55,fill:"#8a5a34"},g);
+  el("rect",{x:x-u*0.56,y:y-u*0.62,width:u*1.12,height:u*0.4,rx:6,fill:"#c68a4e",stroke:"#8a5a34","stroke-width":3},g);
+  el("text",{x,y:y-u*0.36,"text-anchor":"middle","font-size":u*0.2,"font-family":"Baloo 2","font-weight":800,fill:"#fff8e6"},g).textContent = label;
+}
+function drawRewardMarker(g,rp,isNight){
+  const t = amountToT(rp.amount);
+  const p = tToPoint(t);
+  const reached = state.maxT >= t - 0.0005;
+  const claimed = !!state.claimedRewards[rp.amount];
+  el("circle",{cx:p.x,cy:p.y,r:24,fill: reached? "#ffe066":"#fff8e6", stroke:"#e0672e","stroke-width":3.5,filter:"url(#pathShadow)"},g);
+  el("text",{x:p.x,y:p.y+7,"text-anchor":"middle","font-size":19},g).textContent = claimed ? "✅" : "🎁";
+  const label = rp.amount.toLocaleString("ru-RU")+" ₴";
+  const pillW = Math.max(50, label.length*6.6);
+  el("rect",{x:p.x-pillW/2,y:p.y+30,width:pillW,height:18,rx:9,fill:isNight?"#243452":"#fff","stroke":"#e0672e","stroke-width":1.6},g);
+  el("text",{x:p.x,y:p.y+43,"text-anchor":"middle","font-size":10.5,"font-family":"Baloo 2","font-weight":800,fill:isNight?"#eef1f7":"#a8451c"},g).textContent = label;
+}
+function drawChestMarker(g,bp,isNight){
+  const t = amountToT(bp.amount);
+  const p = tToPoint(t);
+  const zone = zoneStyleForT(t);
+  const reached = state.maxT >= t - 0.0005;
+  const claimed = !!state.claimedBonuses[bp.amount];
+  el("circle",{cx:p.x,cy:p.y,r:13,fill: reached?zone.fillBright:zone.fillDim, stroke:zone.stroke,"stroke-width":2.5},g);
+  iconChest(g, p.x, p.y-1, 8);
+  if(claimed){ el("text",{x:p.x+9,y:p.y-8,"font-size":11},g).textContent = "✨"; }
+  // compact hundreds-shorthand ("34" for 3400) so the label fits inside the
+  // tiny coin without colliding with its neighbours along the path
+  el("text",{x:p.x, y:p.y+21, "text-anchor":"middle","font-size":8,"font-family":"Nunito","font-weight":700, fill:isNight?"#d7deef":"#5c4632"},g).textContent = Math.round(bp.amount/100);
+}
+function iconChest(g,cx,cy,r){
+  const w=r*1.5, h=r*1.15;
+  el("rect",{x:cx-w/2,y:cy-h*0.05,width:w,height:h*0.55,rx:2,fill:"#8a5a34"},g);
+  el("path",{d:`M ${cx-w/2} ${cy-h*0.05} Q ${cx} ${cy-h*0.75} ${cx+w/2} ${cy-h*0.05} Z`, fill:"#a9713f"},g);
+  el("rect",{x:cx-w*0.08,y:cy-h*0.4,width:w*0.16,height:h*0.75,fill:"#ffd23f"},g);
+  el("circle",{cx,cy:cy-h*0.02,r:w*0.07,fill:"#e0a20b"},g);
+}
+
+/* ---- original chibi "brawler" characters (own designs, not copied) ---- */
+function drawBrawler(g, def){
+  el("ellipse",{cx:0,cy:17,rx:17,ry:6,fill:"rgba(0,0,0,0.22)"},g);
+  el("ellipse",{cx:0,cy:10,rx:14,ry:12,fill:def.accent,stroke:"#20242b","stroke-width":2.6},g);
+  el("ellipse",{cx:-4,cy:5,rx:5,ry:3.6,fill:"#ffffff",opacity:0.22},g);
+  el("circle",{cx:0,cy:-8,r:19,fill:def.bodyColor,stroke:"#20242b","stroke-width":3.2},g);
+  el("path",{d:"M -17 -2 A 19 19 0 0 0 17 -2 A 23 14 0 0 1 -17 -2 Z", fill:"#000000", opacity:0.13},g);
+  el("ellipse",{cx:-7,cy:-16,rx:7,ry:4.4,fill:"#ffffff",opacity:0.42,transform:"rotate(-25 -7 -16)"},g);
+  el("circle",{cx:-6,cy:-8,r:2.8,fill:"#1c2027"},g);
+  el("circle",{cx:6,cy:-8,r:2.8,fill:"#1c2027"},g);
+  el("circle",{cx:-6.8,cy:-9,r:0.9,fill:"#fff"},g);
+  el("circle",{cx:5.2,cy:-9,r:0.9,fill:"#fff"},g);
+  el("path",{d:"M -6 -1 Q 0 2.6 6 -1", stroke:"#1c2027","stroke-width":1.9, fill:"none","stroke-linecap":"round"},g);
+  drawAccessory(g, def);
+}
+function drawAccessory(g,def){
+  if(def.accessory==="goggles"){
+    el("rect",{x:-13,y:-15,width:26,height:6,rx:3,fill:"#2b2b2b"},g);
+    el("circle",{cx:-6,cy:-12,r:4.2,fill:"#bcd9ff",stroke:"#2b2b2b","stroke-width":1.4},g);
+    el("circle",{cx:6,cy:-12,r:4.2,fill:"#bcd9ff",stroke:"#2b2b2b","stroke-width":1.4},g);
+  }else if(def.accessory==="cathood"){
+    el("path",{d:"M -16 -17 L -9 -29 L -3 -16 Z", fill:def.hair},g);
+    el("path",{d:"M 16 -17 L 9 -29 L 3 -16 Z", fill:def.hair},g);
+  }else if(def.accessory==="bandana"){
+    el("path",{d:"M -17 -8 Q 0 2 17 -8 L 17 -2 Q 0 8 -17 -2 Z", fill:def.hair},g);
+  }else if(def.accessory==="wand"){
+    el("line",{x1:15,y1:4,x2:25,y2:-14,stroke:"#8a5a34","stroke-width":3,"stroke-linecap":"round"},g);
+    el("circle",{cx:25,cy:-16,r:4.5,fill:def.hair},g);
+  }else if(def.accessory==="antenna"){
+    el("line",{x1:0,y1:-27,x2:0,y2:-35,stroke:"#7a8a99","stroke-width":2.5},g);
+    el("circle",{cx:0,cy:-36,r:3.2,fill:"#2b6cff"},g);
+  }
+}
+function currentCharacter(){
+  return CONFIG.characters.find(c=>c.id===state.settings.characterId) || CONFIG.characters[0];
+}
+
+function renderMapStatic(){
+  mapSvg.innerHTML = "";
+  const isNight = document.body.classList.contains("night");
+
+  const defs = el("defs",{},mapSvg);
+  const grad = el("linearGradient",{id:"meadowGrad",x1:"0",y1:"0",x2:"0",y2:"1"},defs);
+  if(isNight){
+    el("stop",{offset:"0%","stop-color":"#3a2c4a"},grad);
+    el("stop",{offset:"100%","stop-color":"#221a30"},grad);
+  }else{
+    el("stop",{offset:"0%","stop-color":"#f3d9a0"},grad);
+    el("stop",{offset:"100%","stop-color":"#dba85a"},grad);
+  }
+  const blurF = el("filter",{id:"softBlur",x:"-50%",y:"-50%",width:"200%",height:"200%"},defs);
+  el("feGaussianBlur",{stdDeviation:Math.max(8,SVG_H*0.02)},blurF);
+  const shadowF = el("filter",{id:"pathShadow",x:"-30%",y:"-30%",width:"160%",height:"160%"},defs);
+  el("feDropShadow",{dx:"0",dy:"3",stdDeviation:"4",style:"flood-color:#000;flood-opacity:0.18"},shadowF);
+
+  el("rect",{x:0,y:0,width:SVG_W,height:SVG_H,fill:"url(#meadowGrad)"},mapSvg);
+
+  camGroup = el("g",{id:"camGroup"},mapSvg);
+
+  // soft blurred ground shading for depth
+  const blobGroup = el("g",{filter:"url(#softBlur)"},camGroup);
+  BG_BLOBS.forEach((b,i)=>{
+    el("ellipse",{cx:b.x*SVG_W, cy:b.y*SVG_H, rx:b.rx*SVG_W, ry:b.ry*SVG_H,
+      fill: i%2===0 ? (isNight?"#3d2f56":"#e8c37e") : (isNight?"#2c2242":"#d9a75a"), opacity:0.55},blobGroup);
+  });
+
+  if(isNight){
+    STARS.forEach(s=> el("circle",{cx:s.x*SVG_W, cy:s.y*SVG_H, r:s.r, fill:"#fff", opacity:0.7+0.3*(s.r/3)},camGroup));
+    el("circle",{cx:SVG_W*0.88, cy:SVG_H*0.14, r:SVG_H*0.055, fill:"#eef1f7", opacity:0.9},camGroup);
+  }else{
+    el("circle",{cx:SVG_W*0.9, cy:SVG_H*0.13, r:SVG_H*0.09, fill:"#fff3c4", opacity:0.5,filter:"url(#softBlur)"},camGroup);
+    el("circle",{cx:SVG_W*0.9, cy:SVG_H*0.13, r:SVG_H*0.05, fill:"#ffc93c"},camGroup);
+  }
+
+  // scenery
+  CONFIG.scenery.forEach(item=> drawScenery(camGroup,item));
+
+  // path ribbon: shadow pass for the whole route, then a coloured top layer
+  // per chapter (green → gold → purple → blue), echoing the reference map.
+  const fullD = "M " + PATH.pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ");
+  el("path",{d:fullD, stroke:"#8a5a2c", "stroke-width":40, fill:"none","stroke-linecap":"round","stroke-linejoin":"round", filter:"url(#pathShadow)"},camGroup);
+  let segStart = 0;
+  ZONE_STYLES.forEach((zs,i)=>{
+    const segEnd = PATH.zoneIdx[i];
+    const segPts = PATH.pts.slice(segStart, segEnd+1);
+    if(segPts.length>1){
+      const segD = "M " + segPts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ");
+      el("path",{d:segD, stroke:zs.fillBright, "stroke-width":30, fill:"none","stroke-linecap":"round","stroke-linejoin":"round"},camGroup);
+    }
+    segStart = segEnd;
+  });
+  el("path",{d:fullD, stroke:"#5c3a1a", "stroke-width":2, "stroke-dasharray":"12 16", fill:"none","stroke-linecap":"round", opacity:0.22},camGroup);
+
+  // start & finish signs
+  const startPt = PATH.pts[0];
+  const finishPt = PATH.pts[PATH.pts.length-1];
+  drawSignpost(camGroup, startPt.x, startPt.y-18, "СТАРТ", isNight);
+  drawSignpost(camGroup, finishPt.x, finishPt.y-18, "ФИНИШ", isNight);
+  el("text",{x:finishPt.x, y:finishPt.y-58, "text-anchor":"middle","font-size":22},camGroup).textContent="🎉";
+
+  // small decorative dots
+  // (removed — every 100 ₴ step now has its own reward/chest marker)
+
+  // bonus chests (admin-configured amounts + prizes)
+  state.settings.bonusPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(bp=> drawChestMarker(camGroup, bp, isNight));
+
+  // reward checkpoints (admin-configured amounts + values)
+  state.settings.rewardPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(rp=> drawRewardMarker(camGroup, rp, isNight));
+
+  // character
+  const pos = tToPoint(amountToT(state.amount));
+  const charGroup = el("g",{id:"charGroup", transform:`translate(${pos.x},${pos.y})`},camGroup);
+  drawBrawler(charGroup, currentCharacter());
+  charEl = charGroup;
+
+  applyCamera(pos, 1);
+
+  const goalBadge = document.getElementById("goalBadgeVal");
+  if(goalBadge) goalBadge.textContent = state.settings.goalAmount.toLocaleString("ru-RU")+" ₴";
+}
+
+function applyCamera(center, zoom){
+  const vw = SVG_W / zoom, vh = SVG_H / zoom;
+  let x = center.x - vw/2, y = center.y - vh/2;
+  x = Math.max(0, Math.min(SVG_W-vw, x));
+  y = Math.max(0, Math.min(SVG_H-vh, y));
+  mapSvg.setAttribute("viewBox", `${x} ${y} ${vw} ${vh}`);
+}
+
+/* ============ MOVEMENT ANIMATION ============ */
+let animating = false;
+function easeInOutCubic(x){ return x<0.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2; }
+
+function animateTo(newAmount, onDone){
+  const oldT = amountToT(state.amount);
+  const newT = amountToT(newAmount);
+  const startTime = performance.now();
+  const duration = CONFIG.animDurationMs;
+  animating = true;
+
+  function frame(now){
+    const elapsed = now - startTime;
+    const raw = Math.min(1, elapsed/duration);
+    const eased = easeInOutCubic(raw);
+    const curT = oldT + (newT-oldT)*eased;
+    const p = tToPoint(curT);
+    if(charEl) charEl.setAttribute("transform", `translate(${p.x},${p.y})`);
+    const zoom = 1.9;
+    applyCamera(p, zoom);
+    if(curT > state.maxT) state.maxT = curT;
+    renderDotsGlowOnly();
+    if(raw < 1){
+      requestAnimationFrame(frame);
+    }else{
+      state.amount = newAmount;
+      if(newT > state.maxT) state.maxT = newT;
+      animating = false;
+      saveState();
+      settleCamera(p);
+      if(onDone) onDone();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function settleCamera(finalPoint){
+  const startTime = performance.now();
+  const duration = 700;
+  function frame(now){
+    const raw = Math.min(1,(now-startTime)/duration);
+    const zoom = 1.9 - 0.7*easeInOutCubic(raw);
+    applyCamera(finalPoint, zoom);
+    if(raw<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function renderDotsGlowOnly(){
+  // lightweight partial update during animation: re-render dots' fill based on maxT
+  const dotEls = camGroup ? camGroup.querySelectorAll("circle[r='6'],circle[r='10']") : [];
+  // simpler: skip heavy update every frame; full re-render happens after animation via renderAll()
+}
+
+/* ============ REWARD / BONUS LOGIC ============ */
+function todayStr(){
+  return new Date().toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric"});
+}
+let pendingQueue = [];
+function collectCelebrations(newAmount){
+  const items = [];
+  state.settings.rewardPoints.forEach(rp=>{
+    if(newAmount >= rp.amount && !state.claimedRewards[rp.amount]){
+      items.push({type:"reward", amount:rp.amount, reward:rp.reward});
+    }
+  });
+  state.settings.bonusPoints.forEach(bp=>{
+    if(newAmount >= bp.amount && !state.claimedBonuses[bp.amount]){
+      items.push({type:"bonus", amount:bp.amount, minutesLabel:bp.minutesLabel});
+    }
+  });
+  items.sort((a,b)=>a.amount-b.amount);
+  pendingQueue = items;
+  showNextCelebration();
+}
+function showNextCelebration(){
+  if(pendingQueue.length===0) return;
+  const item = pendingQueue[0];
+  if(item.type==="reward"){
+    document.getElementById("rewardBig").textContent = "🎉";
+    document.getElementById("rewardTitle").textContent = "Поздравляем!";
+    document.getElementById("rewardText").textContent = `Ты накопил ${item.amount.toLocaleString("ru-RU")} ₴! Подойди к родителям и получи награду ${item.reward.toLocaleString("ru-RU")} ₴.`;
+    const overlay = document.getElementById("rewardOverlay");
+    overlay.classList.remove("hidden");
+    overlay.dataset.amt = item.amount;
+  }else{
+    document.getElementById("bonusText").textContent = `Ты накопил ${item.amount.toLocaleString("ru-RU")} ₴ и нашёл сундук! Что выберешь?`;
+    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " экрана";
+    const overlay = document.getElementById("bonusOverlay");
+    overlay.classList.remove("hidden");
+    overlay.dataset.amt = item.amount;
+    overlay.dataset.minutes = item.minutesLabel;
+  }
+}
+document.getElementById("rewardClaimBtn").addEventListener("click", ()=>{
+  const overlay = document.getElementById("rewardOverlay");
+  const amt = Number(overlay.dataset.amt);
+  state.claimedRewards[amt] = true;
+  saveState();
+  overlay.classList.add("hidden");
+  pendingQueue.shift();
+  renderAll();
+  setTimeout(showNextCelebration, 300);
+});
+function claimBonus(choice){
+  const overlay = document.getElementById("bonusOverlay");
+  const amt = Number(overlay.dataset.amt);
+  const minutesLabel = overlay.dataset.minutes;
+  state.claimedBonuses[amt] = {choice, minutesLabel};
+  state.history.push({
+    date: todayStr(), kind:"bonus", delta:0,
+    icon: choice==="treat" ? "🍬" : "⏱",
+    comment: choice==="treat"
+      ? `Сундук на ${amt.toLocaleString("ru-RU")} ₴ — выбрал сладость`
+      : `Сундук на ${amt.toLocaleString("ru-RU")} ₴ — выбрал экранное время: ${minutesLabel}`
+  });
+  saveState();
+  overlay.classList.add("hidden");
+  pendingQueue.shift();
+  renderAll();
+  setTimeout(showNextCelebration, 300);
+}
+document.getElementById("bonusTreatBtn").addEventListener("click", ()=> claimBonus("treat"));
+document.getElementById("bonusScreenBtn").addEventListener("click", ()=> claimBonus("screen"));
+
+function showToast(msg){
+  const holder = document.getElementById("toastHolder");
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  holder.appendChild(t);
+  setTimeout(()=>{ t.remove(); }, 3200);
+}
+
+/* ============ HISTORY / STATS RENDER ============ */
+function renderHistory(){
+  const list = document.getElementById("historyList");
+  if(state.history.length===0){
+    list.innerHTML = '<div class="emptyhist">Пока нет записей — обнови сумму, чтобы начать историю.</div>';
+    return;
+  }
+  list.innerHTML = "";
+  state.history.slice().reverse().forEach(h=>{
+    const row = document.createElement("div");
+    row.className = "hitem";
+    const sign = h.delta>0 ? "+" : "";
+    row.innerHTML = `<span><span class="date">${h.date}</span><br>${h.comment}</span><span class="delta ${h.delta>=0?'plus':'minus'}">${sign}${h.delta.toLocaleString("ru-RU")} ₴</span>`;
+    list.appendChild(row);
+  });
+}
+
+function renderStats(){
+  document.getElementById("statAmount").textContent = state.amount.toLocaleString("ru-RU")+" ₴";
+  document.getElementById("statGoal").textContent = state.settings.goalAmount.toLocaleString("ru-RU")+" ₴";
+  const nextReward = state.settings.rewardPoints.slice().sort((a,b)=>a.amount-b.amount).find(rp=>rp.amount>state.amount);
+  document.getElementById("statNext").textContent = nextReward ? (nextReward.amount-state.amount).toLocaleString("ru-RU")+" ₴" : "Цель достигнута! 🎉";
+  document.getElementById("amountInput").value = state.amount;
+}
+
+function renderAll(){
+  renderMapStatic();
+  renderHistory();
+  renderStats();
+}
+
+/* ============ INPUT HANDLERS ============ */
+function applyNewAmount(newAmount, comment){
+  newAmount = Math.max(0, Math.round(newAmount));
+  if(newAmount === state.amount) return;
+  const prev = state.amount;
+  const delta = newAmount - prev;
+  state.history.push({date: new Date().toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric"}), delta, comment: comment || (delta>0?"Пополнение":"Списание")});
+  saveState();
+  animateTo(newAmount, ()=>{
+    renderAll();
+    collectCelebrations(newAmount);
+    renderAll();
+  });
+}
+
+document.getElementById("applyBtn").addEventListener("click", ()=>{
+  if(animating) return;
+  const v = Number(document.getElementById("amountInput").value);
+  if(isNaN(v)) return;
+  applyNewAmount(v, "Ручной ввод суммы");
+});
+
+document.querySelectorAll(".stepbtn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    if(animating) return;
+    const d = Number(btn.dataset.d);
+    applyNewAmount(state.amount + d, (d>0?"+":"")+d.toLocaleString("ru-RU")+" ₴ кнопкой");
+  });
+});
+
+document.getElementById("dnBtn").addEventListener("click", ()=>{
+  const modes = ["auto","day","night"];
+  const cur = state.settings.dayNightMode;
+  const next = modes[(modes.indexOf(cur)+1)%modes.length];
+  state.settings.dayNightMode = next;
+  saveState();
+  applyDayNight();
+  showToast(next==="auto" ? "🌤️ Режим: авто" : next==="day" ? "☀️ Режим: день" : "🌙 Режим: ночь");
+});
+
+function applyDayNight(){
+  let isNight;
+  if(state.settings.dayNightMode==="night") isNight = true;
+  else if(state.settings.dayNightMode==="day") isNight = false;
+  else { const h = new Date().getHours(); isNight = (h < 6 || h >= 20); }
+  document.body.classList.toggle("night", isNight);
+  document.getElementById("dnBtn").textContent = state.settings.dayNightMode==="auto" ? "🌤️" : (isNight ? "🌙":"☀️");
+  renderMapStatic();
+}
+
+document.getElementById("zoomOutBtn").addEventListener("click", ()=>{
+  applyCamera({x:SVG_W/2,y:SVG_H/2}, 1);
+});
+document.getElementById("zoomFitBtn").addEventListener("click", ()=>{
+  const p = tToPoint(amountToT(state.amount));
+  applyCamera(p, 1.9);
+});
+
+function renderCharGrid(){
+  const grid = document.getElementById("charGrid");
+  grid.innerHTML = "";
+  CONFIG.characters.forEach(c=>{
+    const card = document.createElement("div");
+    card.className = "charCard" + (c.id===state.settings.characterId ? " selected" : "");
+    const svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("viewBox","0 0 56 56");
+    const g = document.createElementNS(svgNS,"g");
+    g.setAttribute("transform","translate(28,38)");
+    svg.appendChild(g);
+    drawBrawler(g, c);
+    card.appendChild(svg);
+    const name = document.createElement("div");
+    name.className = "cname";
+    name.textContent = c.name;
+    card.appendChild(name);
+    card.addEventListener("click", ()=>{
+      state.settings.characterId = c.id;
+      saveState();
+      renderCharGrid();
+      renderMapStatic();
+    });
+    grid.appendChild(card);
+  });
+}
+document.getElementById("charBtn").addEventListener("click", ()=>{
+  renderCharGrid();
+  document.getElementById("charOverlay").classList.remove("hidden");
+});
+document.getElementById("charCloseBtn").addEventListener("click", ()=>{
+  document.getElementById("charOverlay").classList.add("hidden");
+});
+
+/* ============ ACHIEVEMENTS (простой список для MVP) ============ */
+function computeAchievements(){
+  const rp = state.settings.rewardPoints;
+  const bp = state.settings.bonusPoints;
+  const list = [
+    {id:"firstreward", name:"Первая награда получена", done: rp.some(r=>state.claimedRewards[r.amount])},
+    {id:"halfway", name:"Пройдена половина пути", done: state.maxT >= 0.5},
+    {id:"allrewards", name:"Получены все денежные награды", done: rp.length>0 && rp.every(r=>state.claimedRewards[r.amount])},
+    {id:"allchests", name:"Открыты все сундуки", done: bp.length>0 && bp.every(b=>state.claimedBonuses[b.amount])},
+    {id:"goal", name:"Цель достигнута", done: state.amount >= state.settings.goalAmount},
+    {id:"mapdone", name:"Пройден весь путь на карте", done: state.maxT >= 0.999},
+  ];
+  return list;
+}
+document.getElementById("achBtn").addEventListener("click", ()=>{
+  const list = computeAchievements();
+  document.getElementById("achList").innerHTML = list.map(a=>`<div style="padding:8px 0;border-bottom:1px dashed var(--card-edge);display:flex;justify-content:space-between;"><span>${a.done?"✅":"⬜"} ${a.name}</span></div>`).join("");
+  document.getElementById("achOverlay").classList.remove("hidden");
+});
+document.getElementById("achCloseBtn").addEventListener("click", ()=>{
+  document.getElementById("achOverlay").classList.add("hidden");
+});
+
+/* ============ ADMIN PANEL ============ */
+const adminOverlay = document.getElementById("adminOverlay");
+document.getElementById("adminBtn").addEventListener("click", ()=>{
+  document.getElementById("adminLockView").classList.remove("hidden");
+  document.getElementById("adminUnlockedView").classList.add("hidden");
+  document.getElementById("pinInput").value = "";
+  adminOverlay.classList.remove("hidden");
+});
+document.getElementById("adminCloseBtn").addEventListener("click", ()=> adminOverlay.classList.add("hidden"));
+document.getElementById("pinSubmit").addEventListener("click", ()=>{
+  const val = document.getElementById("pinInput").value;
+  if(val === state.settings.adminPin){
+    document.getElementById("adminLockView").classList.add("hidden");
+    document.getElementById("adminUnlockedView").classList.remove("hidden");
+    document.getElementById("adminStart").value = state.settings.startAmount;
+    document.getElementById("adminGoal").value = state.settings.goalAmount;
+    renderAdminRewardRows();
+    renderAdminBonusRows();
+  }else{
+    showToast("Неверный PIN");
+  }
+});
+
+function makeApRow(html){
+  const row = document.createElement("div");
+  row.className = "apRow";
+  row.innerHTML = html;
+  row.querySelector(".apDel").addEventListener("click", ()=> row.remove());
+  return row;
+}
+function renderAdminRewardRows(){
+  const box = document.getElementById("rewardRows");
+  box.innerHTML = "";
+  state.settings.rewardPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(rp=>{
+    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${rp.amount}" step="1"><span class="apUnit">₴ →</span><input type="number" class="apRew" value="${rp.reward}" step="1"><span class="apUnit">₴</span><button type="button" class="apDel">✕</button>`));
+  });
+}
+function renderAdminBonusRows(){
+  const box = document.getElementById("bonusRows");
+  box.innerHTML = "";
+  state.settings.bonusPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(bp=>{
+    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${bp.amount}" step="1"><span class="apUnit">₴ →</span><input type="text" class="apLabel" value="${bp.minutesLabel}" placeholder="напр. 1 час"><button type="button" class="apDel">✕</button>`));
+  });
+}
+document.getElementById("addRewardRow").addEventListener("click", ()=>{
+  document.getElementById("rewardRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сумма"><span class="apUnit">₴ →</span><input type="number" class="apRew" step="1" placeholder="приз"><span class="apUnit">₴</span><button type="button" class="apDel">✕</button>`));
+});
+document.getElementById("addBonusRow").addEventListener("click", ()=>{
+  document.getElementById("bonusRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сумма"><span class="apUnit">₴ →</span><input type="text" class="apLabel" placeholder="напр. 1 час"><button type="button" class="apDel">✕</button>`));
+});
+
+document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
+  const s = Number(document.getElementById("adminStart").value);
+  const g = Number(document.getElementById("adminGoal").value);
+  if(!isNaN(s)) state.settings.startAmount = s;
+  if(!isNaN(g)) state.settings.goalAmount = g;
+
+  const rewardMap = new Map();
+  document.querySelectorAll("#rewardRows .apRow").forEach(row=>{
+    const amt = Math.round(Number(row.querySelector(".apAmt").value));
+    const rew = Math.round(Number(row.querySelector(".apRew").value));
+    if(Number.isFinite(amt) && amt>0 && Number.isFinite(rew) && rew>=0){
+      rewardMap.set(amt, rew);
+    }
+  });
+  state.settings.rewardPoints = Array.from(rewardMap, ([amount,reward])=>({amount,reward})).sort((a,b)=>a.amount-b.amount);
+
+  const bonusMap = new Map();
+  document.querySelectorAll("#bonusRows .apRow").forEach(row=>{
+    const amt = Math.round(Number(row.querySelector(".apAmt").value));
+    const label = row.querySelector(".apLabel").value.trim();
+    if(Number.isFinite(amt) && amt>0 && label){
+      bonusMap.set(amt, label);
+    }
+  });
+  state.settings.bonusPoints = Array.from(bonusMap, ([amount,minutesLabel])=>({amount,minutesLabel})).sort((a,b)=>a.amount-b.amount);
+
+  const newPin = document.getElementById("adminNewPin").value.trim();
+  if(newPin){
+    state.settings.adminPin = newPin;
+    document.getElementById("adminNewPin").value = "";
+    showToast("Настройки сохранены, PIN обновлён");
+  }else{
+    showToast("Настройки сохранены");
+  }
+
+  saveState();
+  renderAdminRewardRows();
+  renderAdminBonusRows();
+  renderAll();
+});
+document.getElementById("adminResetProgress").addEventListener("click", ()=>{
+  if(!confirm("Сбросить прогресс: сумма, история и путь на карте обнулятся. Продолжить?")) return;
+  state.amount = state.settings.startAmount;
+  state.maxT = 0;
+  state.history = [];
+  state.claimedBonuses = {};
+  saveState();
+  renderAll();
+  showToast("Прогресс сброшен");
+});
+document.getElementById("adminResetRewards").addEventListener("click", ()=>{
+  if(!confirm("Сбросить полученные награды и открытые сундуки?")) return;
+  state.claimedRewards = {};
+  state.claimedBonuses = {};
+  saveState();
+  renderAll();
+  showToast("Награды и сундуки сброшены");
+});
+document.getElementById("adminExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "savings-progress.json";
+  a.click();
+});
+document.getElementById("adminImportBtn").addEventListener("click", ()=>{
+  document.getElementById("adminImportFile").click();
+});
+document.getElementById("adminImportFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const imported = JSON.parse(reader.result);
+      state = Object.assign(defaultState(), imported);
+      saveState();
+      renderAll();
+      showToast("Прогресс импортирован");
+    }catch(err){
+      showToast("Не удалось прочитать файл");
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* ============ LOGIN / APP BOOT ============ */
+const wrapEl = document.querySelector(".wrap");
+const loginOverlay = document.getElementById("loginOverlay");
+const loginError = document.getElementById("loginError");
+const loginUsernameInput = document.getElementById("loginUsername");
+const loginPinInput = document.getElementById("loginPin");
+
+function startApp(){
+  initGeometry();
+  applyDayNight();
+  renderAll();
+
+  let resizeRaf = null;
+  function handleResize(){
+    if(resizeRaf) return;
+    resizeRaf = requestAnimationFrame(()=>{
+      resizeRaf = null;
+      if(animating) return; // avoid fighting with an in-flight camera animation
+      initGeometry();
+      renderAll();
+    });
+  }
+  window.addEventListener("resize", handleResize);
+  if(typeof ResizeObserver !== "undefined"){
+    new ResizeObserver(handleResize).observe(mapCardEl);
+  }
+}
+
+function showApp(){
+  loginOverlay.classList.add("hidden");
+  wrapEl.classList.remove("hidden");
+  startApp();
+}
+
+async function attemptLogin(username, pin, silent){
+  username = (username || "").trim();
+  pin = (pin || "").trim();
+  if(!silent) loginError.textContent = "";
+  if(!username){
+    if(!silent) loginError.textContent = "Введи имя";
+    return;
+  }
+  if(!/^\d{6}$/.test(pin)){
+    if(!silent) loginError.textContent = "Код должен состоять ровно из 6 цифр";
+    return;
+  }
+  if(!silent){
+    loginError.textContent = "Входим…";
+    document.getElementById("loginSubmitBtn").disabled = true;
+  }
+  try{
+    const data = await cloudLogin(username, pin);
+    session = { username, pin };
+    saveSession(session);
+    if(data.state && Object.keys(data.state).length){
+      state = Object.assign(defaultState(), data.state);
+    }
+    migrateState();
+    document.getElementById("userBadge").textContent = "👤 " + username;
+    showApp();
+    if(data.created){ saveState(); } // push the fresh profile up right away
+  }catch(e){
+    if(!silent){
+      loginError.textContent = e.message || "Не удалось войти. Проверь подключение к интернету.";
+      document.getElementById("loginSubmitBtn").disabled = false;
+    }else if(e.code === "wrong_pin"){
+      loginError.textContent = "Сохранённый код больше не подходит — введи его ещё раз.";
+      loginPinInput.value = "";
+      loginPinInput.focus();
+    }else{
+      // couldn't reach the server (offline etc.) — don't block play, just try again next save
+      showApp();
+    }
+  }
+}
+document.getElementById("loginSubmitBtn").addEventListener("click", ()=>{
+  attemptLogin(loginUsernameInput.value, loginPinInput.value, false);
+});
+loginPinInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") document.getElementById("loginSubmitBtn").click();
+});
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  if(!confirm("Выйти из профиля «" + (session ? session.username : "") + "» на этом устройстве?")) return;
+  clearSession();
+  location.reload();
+});
+
+/* ============ INIT ============ */
+if(!cloudConfigured()){
+  // no Supabase project configured yet — behave exactly like the original
+  // local-only version so the file still works out of the box.
+  showApp();
+}else{
+  wrapEl.classList.add("hidden");
+  document.getElementById("userBadge").classList.remove("hidden");
+  document.getElementById("logoutBtn").classList.remove("hidden");
+  loginOverlay.classList.remove("hidden");
+  const remembered = loadSession();
+  if(remembered){
+    loginUsernameInput.value = remembered.username;
+    loginError.textContent = "Входим…";
+    attemptLogin(remembered.username, remembered.pin, true);
+  }
+}
+
+})();
+</script>
+</body>
+</html>
