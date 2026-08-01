@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ua">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Копилка приключений — МВП</title>
+<title>Скарбничка пригод</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -152,13 +152,13 @@
 <div class="wrap">
 
   <div class="topbar">
-    <div class="title">🧭 Копилка приключений <span class="badge" id="themeBadge">Классика</span> <span class="badge hidden" id="userBadge">☁️</span></div>
+    <div class="title">🧭 Скарбничка пригод <span class="badge" id="themeBadge">Класика</span> <span class="badge hidden" id="userBadge">☁️</span></div>
     <div class="topbtns">
-      <button class="iconbtn hidden" id="logoutBtn" title="Сменить профиль">🚪</button>
-      <button class="iconbtn" id="charBtn" title="Выбрать персонажа">🧑</button>
-      <button class="iconbtn" id="dnBtn" title="День / ночь">🌤️</button>
-      <button class="iconbtn" id="achBtn" title="Достижения">🏆</button>
-      <button class="iconbtn" id="adminBtn" title="Админ-панель">⚙️</button>
+      <button class="iconbtn hidden" id="logoutBtn" title="Змінити профіль">🚪</button>
+      <button class="iconbtn" id="charBtn" title="Вибрати персонажа">🧑</button>
+      <button class="iconbtn" id="dnBtn" title="День / ніч">🌤️</button>
+      <button class="iconbtn" id="achBtn" title="Досягнення">🏆</button>
+      <button class="iconbtn" id="adminBtn" title="Адмін-панель">⚙️</button>
     </div>
   </div>
 
@@ -166,29 +166,29 @@
     <div class="mapcol">
       <div class="mapcard">
         <svg id="mapSvg" viewBox="0 0 1900 950" xmlns="http://www.w3.org/2000/svg"></svg>
-        <div class="goalBadge">🏆 ЦЕЛЬ: <span id="goalBadgeVal">0 ₴</span></div>
+        <div class="goalBadge">🏆 ЦІЛЬ: <span id="goalBadgeVal">0 ₴</span></div>
         <div class="zoomctrls">
           <button id="zoomOutBtn" title="Вся карта">🔍−</button>
-          <button id="zoomFitBtn" title="К персонажу">🎯</button>
+          <button id="zoomFitBtn" title="До персонажа">🎯</button>
         </div>
       </div>
     </div>
 
     <div class="sidecol">
       <div class="statline">
-        <div class="stat"><div class="lbl">Накоплено</div><div class="val" id="statAmount">0 ₴</div></div>
-        <div class="stat"><div class="lbl">Цель</div><div class="val" id="statGoal">0 ₴</div></div>
+        <div class="stat"><div class="lbl">Накопичено</div><div class="val" id="statAmount">0 ₴</div></div>
+        <div class="stat"><div class="lbl">Ціль</div><div class="val" id="statGoal">0 ₴</div></div>
         <div class="stat"><div class="lbl">До точки</div><div class="val" id="statNext">—</div></div>
       </div>
 
       <div class="panel">
-        <h2>Сколько накоплено сейчас?</h2>
+        <h2>Скільки накопичено зараз?</h2>
         <div class="amtrow">
           <input type="number" id="amountInput" step="1">
-          <button class="setbtn" id="applyBtn">Обновить →</button>
+          <button class="setbtn" id="applyBtn">Оновити →</button>
         </div>
         <div class="steppers">
-          <div class="stepgroup"><span class="lbl">Добавить</span>
+          <div class="stepgroup"><span class="lbl">Додати</span>
             <div class="stepbtns">
               <button class="stepbtn plus" data-d="50">+50</button>
               <button class="stepbtn plus" data-d="100">+100</button>
@@ -199,7 +199,7 @@
       </div>
 
       <div class="panel grow">
-        <h2>История</h2>
+        <h2>Історія</h2>
         <div class="history" id="historyList"></div>
       </div>
     </div>
@@ -209,93 +209,93 @@
 <div id="rewardOverlay" class="overlay hidden">
   <div class="modal">
     <div class="big" id="rewardBig">🎉</div>
-    <h3 id="rewardTitle">Поздравляем!</h3>
-    <p id="rewardText">Подойди к родителям и получи награду.</p>
-    <button id="rewardClaimBtn">Забрать 🎁</button>
+    <h3 id="rewardTitle">Вітаємо!</h3>
+    <p id="rewardText">Підійди до батьків та отримай нагороду.</p>
+    <button id="rewardClaimBtn">Забрати 🎁</button>
   </div>
 </div>
 
 <div id="bonusOverlay" class="overlay hidden">
   <div class="modal">
     <div class="big">📦</div>
-    <h3>Мистический сундук!</h3>
-    <p id="bonusText">Ты нашёл сундук! Что выберешь?</p>
+    <h3>Містична скриня!</h3>
+    <p id="bonusText">Ти знайшов скриню! Що вибереш?</p>
     <div class="choiceBtns">
-      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Сладость</button>
-      <button id="bonusScreenBtn" class="choiceBtn screen">⏱ <span id="bonusScreenLabel">экран</span></button>
+      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Смаколики</button>
+      <button id="bonusScreenBtn" class="choiceBtn screen">⏱ <span id="bonusScreenLabel">екран</span></button>
     </div>
   </div>
 </div>
 
 <div id="charOverlay" class="overlay hidden">
   <div class="modal" style="max-width:460px;">
-    <h3>🧑 Выбери своего героя</h3>
+    <h3>🧑 Вибери свого героя</h3>
     <div class="charGrid" id="charGrid"></div>
-    <button id="charCloseBtn" style="margin-top:14px;">Закрыть</button>
+    <button id="charCloseBtn" style="margin-top:14px;">Закрити</button>
   </div>
 </div>
 
 <div id="achOverlay" class="overlay hidden">
   <div class="modal" style="max-width:420px;">
-    <h3>🏆 Достижения</h3>
+    <h3>🏆 Досягнення</h3>
     <div id="achList" style="text-align:left;"></div>
-    <button id="achCloseBtn" style="margin-top:14px;">Закрыть</button>
+    <button id="achCloseBtn" style="margin-top:14px;">Закрити</button>
   </div>
 </div>
 
 <div id="adminOverlay" class="admin-overlay hidden">
   <div class="admin-modal">
-    <h2>⚙️ Админ-панель</h2>
+    <h2>⚙️ Адмін-панель</h2>
     <div id="adminLockView">
       <label for="pinInput">PIN-код</label>
       <input type="password" id="pinInput" inputmode="numeric" placeholder="••••">
-      <div class="admin-actions"><button id="pinSubmit" style="flex:none;">Войти</button></div>
-      <p class="admin-note">PIN по умолчанию: 1234</p>
+      <div class="admin-actions"><button id="pinSubmit" style="flex:none;">Увійти</button></div>
+      <p class="admin-note">PIN за замовчуванням: 1234</p>
     </div>
     <div id="adminUnlockedView" class="hidden">
-      <label>Стартовая сумма</label>
+      <label>Стартова сума</label>
       <input type="number" id="adminStart">
-      <label>Финишная сумма (цель)</label>
+      <label>Фінішна сума (ціль)</label>
       <input type="number" id="adminGoal">
 
-      <label>Денежные награды — сумма → сколько выдать</label>
+      <label>Грошові нагороди — сума → скільки видати</label>
       <div class="apTable" id="rewardRows"></div>
-      <button type="button" class="apAddBtn" id="addRewardRow">+ Добавить точку награды</button>
+      <button type="button" class="apAddBtn" id="addRewardRow">+ Додати точку нагороди</button>
 
-      <label>Бонусные сундуки — сумма → что предложить вместо сладости</label>
+      <label>Бонусні скрині — сума → що запропонувати замість солодощі</label>
       <div class="apTable" id="bonusRows"></div>
-      <button type="button" class="apAddBtn" id="addBonusRow">+ Добавить точку сундука</button>
+      <button type="button" class="apAddBtn" id="addBonusRow">+ Додати точку скрині</button>
 
-      <label>Новый PIN администратора (необязательно)</label>
-      <input type="text" id="adminNewPin" inputmode="numeric" placeholder="оставь пустым, чтобы не менять">
+      <label>Новий PIN адміністратора (необов'язково)</label>
+      <input type="text" id="adminNewPin" inputmode="numeric" placeholder="залиши порожнім, щоб не міняти">
 
       <div class="admin-actions">
-        <button id="adminSaveSettings">💾 Сохранить</button>
+        <button id="adminSaveSettings">💾 Зберегти</button>
       </div>
       <div class="admin-actions">
-        <button id="adminResetProgress" class="danger">↺ Сбросить прогресс</button>
-        <button id="adminResetRewards" class="danger">↺ Сбросить награды</button>
+        <button id="adminResetProgress" class="danger">↺ Скинути прогрес</button>
+        <button id="adminResetRewards" class="danger">↺ Скинути нагороди</button>
       </div>
       <div class="admin-actions">
-        <button id="adminExport">⬇ Экспорт</button>
-        <button id="adminImportBtn">⬆ Импорт</button>
+        <button id="adminExport">⬇ Експорт</button>
+        <button id="adminImportBtn">⬆ Імпорт</button>
         <input type="file" id="adminImportFile" accept="application/json" class="hidden">
       </div>
-      <p class="admin-note">Изменение стартовой/финишной суммы не пересчитывает уже сохранённый прогресс — для полного сброса используйте «Сбросить прогресс». Пустые или задвоенные строки в таблицах при сохранении игнорируются.</p>
+      <p class="admin-note">Зміна стартової/фінішної суми не перераховує вже збережений прогрес - для повного скидання використовуйте "Скинути прогрес". Порожні або задвоєні рядки у таблицях при збереженні ігноруються.</p>
     </div>
-    <button class="admin-close" id="adminCloseBtn">Закрыть</button>
+    <button class="admin-close" id="adminCloseBtn">Закрити</button>
   </div>
 </div>
 
 <div id="loginOverlay" class="overlay hidden">
   <div class="modal" style="max-width:360px;">
     <div class="big">☁️</div>
-    <h3>Вход в игру</h3>
-    <p id="loginIntro">Придумай имя и код из 6 цифр — прогресс сохранится в облаке и будет на месте на любом устройстве.</p>
-    <input type="text" id="loginUsername" class="loginField" placeholder="Имя" autocomplete="off">
-    <input type="password" id="loginPin" class="loginField" placeholder="Код из 6 цифр" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
+    <h3>Вхід у гру</h3>
+    <p id="loginIntro">Придумай ім'я та код із 6 цифр - прогрес збережеться у хмарі і буде на місці на будь-якому пристрої.</p>
+    <input type="text" id="loginUsername" class="loginField" placeholder="Ім'я" autocomplete="off">
+    <input type="password" id="loginPin" class="loginField" placeholder="Код із 6 цифр" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
     <p id="loginError" class="loginError"></p>
-    <button id="loginSubmitBtn">Войти / создать профиль</button>
+    <button id="loginSubmitBtn">Увійти / створити профіль</button>
   </div>
 </div>
 
@@ -307,13 +307,13 @@
 
 /* ============ CONFIG (все игровые данные — здесь, отдельно от логики) ============ */
 const BONUS_GROUPS = [
-  {vals:[3100,3200,3300,3400,3600,3700,3800,3900], label:"30 минут"},
-  {vals:[4100,4200,4300,4400,4600,4700,4800,4900], label:"1 час"},
-  {vals:[5100,5200,5300,5400,5600,5700,5800,5900], label:"1 час 30 минут"},
-  {vals:[6100,6200,6300,6400,6600,6700,6800,6900], label:"2 часа"},
-  {vals:[7100,7200,7300,7400,7600,7700,7800,7900], label:"2 часа 30 минут"},
-  {vals:[8100,8200,8300,8400,8600,8700,8800,8900], label:"3 часа"},
-  {vals:[9100,9200,9300,9400,9600,9700,9800,9900], label:"3 часа"}
+  {vals:[3100,3200,3300,3400,3600,3700,3800,3900], label:"30 хвилин"},
+  {vals:[4100,4200,4300,4400,4600,4700,4800,4900], label:"1 година"},
+  {vals:[5100,5200,5300,5400,5600,5700,5800,5900], label:"1 година 30 хвилин"},
+  {vals:[6100,6200,6300,6400,6600,6700,6800,6900], label:"2 години"},
+  {vals:[7100,7200,7300,7400,7600,7700,7800,7900], label:"2 години 30 хвилин"},
+  {vals:[8100,8200,8300,8400,8600,8700,8800,8900], label:"3 години"},
+  {vals:[9100,9200,9300,9400,9600,9700,9800,9900], label:"3 години"}
 ];
 
 const CONFIG = {
@@ -357,7 +357,7 @@ const CONFIG = {
     {id:"spark",  name:"Спаркс", bodyColor:"#ff9645", accent:"#2b2b2b", hair:"#2f3a1f", accessory:"goggles"},
     {id:"luna",   name:"Луна",   bodyColor:"#a586f0", accent:"#5b3fb0", hair:"#fdf6e3", accessory:"cathood"},
     {id:"rocco",  name:"Рокко",  bodyColor:"#f0d6a8", accent:"#4a8c3f", hair:"#5c3a22", accessory:"bandana"},
-    {id:"pixie",  name:"Пикси",  bodyColor:"#ffb3c6", accent:"#ff6f91", hair:"#ffd23f", accessory:"wand"},
+    {id:"pixie",  name:"Піксі",  bodyColor:"#ffb3c6", accent:"#ff6f91", hair:"#ffd23f", accessory:"wand"},
     {id:"duke",   name:"Дюк",    bodyColor:"#b7c2cc", accent:"#7a8a99", hair:"#2b2b2b", accessory:"antenna"}
   ]
 };
