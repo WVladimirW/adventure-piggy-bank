@@ -33,11 +33,15 @@
   .mapcol{flex:1.8 1 0;min-width:0;display:flex;flex-direction:column;min-height:0;}
   .sidecol{flex:1 1 0;min-width:300px;max-width:420px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;padding-right:2px;}
   @media (max-width: 860px){
-    body{overflow-y:auto;}
+    body{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    html{height:auto;}
+    body{height:auto;}
     .wrap{height:auto;min-height:100vh;}
     .main{flex-direction:column;}
-    .mapcol{min-height:52vh;}
-    .sidecol{max-width:none;overflow-y:visible;}
+    .mapcol{height:56vh;min-height:340px;flex:none;}
+    .sidecol{max-width:none;overflow-y:visible;flex:none;min-height:0;}
+    .panel.grow{flex:none;min-height:0;}
+    .history{flex:none;max-height:none;overflow-y:visible;}
   }
   .title{font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px;}
   .title .badge{background:var(--sun);color:#4a3200;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;}
@@ -441,10 +445,10 @@ migrateState();
      2. Run supabase-setup.sql once in its SQL editor
      3. Paste your Project URL + anon public key below
 */
-  const CLOUD_CONFIG = {
-    supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
-    supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
-  };
+const CLOUD_CONFIG = {
+  supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
+  supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
+};
 function cloudConfigured(){
   return CLOUD_CONFIG.supabaseUrl.indexOf("YOUR-PROJECT")===-1 &&
          CLOUD_CONFIG.supabaseAnonKey.indexOf("YOUR-ANON")===-1 &&
