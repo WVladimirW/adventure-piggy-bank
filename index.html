@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ua">
+<html lang="uk">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Скарбничка пригод</title>
+<title>Скарбничка пригод — MVP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -155,7 +155,7 @@
     <div class="title">🧭 Скарбничка пригод <span class="badge" id="themeBadge">Класика</span> <span class="badge hidden" id="userBadge">☁️</span></div>
     <div class="topbtns">
       <button class="iconbtn hidden" id="logoutBtn" title="Змінити профіль">🚪</button>
-      <button class="iconbtn" id="charBtn" title="Вибрати персонажа">🧑</button>
+      <button class="iconbtn" id="charBtn" title="Обрати персонажа">🧑</button>
       <button class="iconbtn" id="dnBtn" title="День / ніч">🌤️</button>
       <button class="iconbtn" id="achBtn" title="Досягнення">🏆</button>
       <button class="iconbtn" id="adminBtn" title="Адмін-панель">⚙️</button>
@@ -168,7 +168,7 @@
         <svg id="mapSvg" viewBox="0 0 1900 950" xmlns="http://www.w3.org/2000/svg"></svg>
         <div class="goalBadge">🏆 ЦІЛЬ: <span id="goalBadgeVal">0 ₴</span></div>
         <div class="zoomctrls">
-          <button id="zoomOutBtn" title="Вся карта">🔍−</button>
+          <button id="zoomOutBtn" title="Уся карта">🔍−</button>
           <button id="zoomFitBtn" title="До персонажа">🎯</button>
         </div>
       </div>
@@ -210,7 +210,7 @@
   <div class="modal">
     <div class="big" id="rewardBig">🎉</div>
     <h3 id="rewardTitle">Вітаємо!</h3>
-    <p id="rewardText">Підійди до батьків та отримай нагороду.</p>
+    <p id="rewardText">Підійди до батьків і отримай нагороду.</p>
     <button id="rewardClaimBtn">Забрати 🎁</button>
   </div>
 </div>
@@ -218,10 +218,10 @@
 <div id="bonusOverlay" class="overlay hidden">
   <div class="modal">
     <div class="big">📦</div>
-    <h3>Містична скриня!</h3>
-    <p id="bonusText">Ти знайшов скриню! Що вибереш?</p>
+    <h3>Містична скринька!</h3>
+    <p id="bonusText">Ти знайшов скриньку! Що обереш?</p>
     <div class="choiceBtns">
-      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Смаколики</button>
+      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Смаколик</button>
       <button id="bonusScreenBtn" class="choiceBtn screen">⏱ <span id="bonusScreenLabel">екран</span></button>
     </div>
   </div>
@@ -229,7 +229,7 @@
 
 <div id="charOverlay" class="overlay hidden">
   <div class="modal" style="max-width:460px;">
-    <h3>🧑 Вибери свого героя</h3>
+    <h3>🧑 Обери свого героя</h3>
     <div class="charGrid" id="charGrid"></div>
     <button id="charCloseBtn" style="margin-top:14px;">Закрити</button>
   </div>
@@ -258,16 +258,23 @@
       <label>Фінішна сума (ціль)</label>
       <input type="number" id="adminGoal">
 
+      <label>Дитина вже має заощадження? Встанови стартову позицію</label>
+      <div class="admin-row">
+        <input type="number" id="adminJumpStart" placeholder="напр. 1000" style="flex:1;">
+        <button type="button" id="adminJumpStartBtn" style="flex:none;">🚀 Встановити старт</button>
+      </div>
+      <p class="admin-note" style="margin-top:6px;">Сума, історія та шлях на карті скинуться, персонаж стане на вказану позицію, а нагороди й скриньки до неї (включно) більше не запропонуються — дитина ніби почала гру одразу з цієї суми.</p>
+
       <label>Грошові нагороди — сума → скільки видати</label>
       <div class="apTable" id="rewardRows"></div>
       <button type="button" class="apAddBtn" id="addRewardRow">+ Додати точку нагороди</button>
 
-      <label>Бонусні скрині — сума → що запропонувати замість солодощі</label>
+      <label>Бонусні скриньки — сума → що запропонувати замість смаколика</label>
       <div class="apTable" id="bonusRows"></div>
-      <button type="button" class="apAddBtn" id="addBonusRow">+ Додати точку скрині</button>
+      <button type="button" class="apAddBtn" id="addBonusRow">+ Додати точку скриньки</button>
 
       <label>Новий PIN адміністратора (необов'язково)</label>
-      <input type="text" id="adminNewPin" inputmode="numeric" placeholder="залиши порожнім, щоб не міняти">
+      <input type="text" id="adminNewPin" inputmode="numeric" placeholder="залиш порожнім, щоб не змінювати">
 
       <div class="admin-actions">
         <button id="adminSaveSettings">💾 Зберегти</button>
@@ -281,7 +288,7 @@
         <button id="adminImportBtn">⬆ Імпорт</button>
         <input type="file" id="adminImportFile" accept="application/json" class="hidden">
       </div>
-      <p class="admin-note">Зміна стартової/фінішної суми не перераховує вже збережений прогрес - для повного скидання використовуйте "Скинути прогрес". Порожні або задвоєні рядки у таблицях при збереженні ігноруються.</p>
+      <p class="admin-note">Зміна стартової/фінішної суми не перераховує вже збережений прогрес — для повного скидання використовуйте «Скинути прогрес». Порожні або задвоєні рядки в таблицях під час збереження ігноруються.</p>
     </div>
     <button class="admin-close" id="adminCloseBtn">Закрити</button>
   </div>
@@ -291,7 +298,7 @@
   <div class="modal" style="max-width:360px;">
     <div class="big">☁️</div>
     <h3>Вхід у гру</h3>
-    <p id="loginIntro">Придумай ім'я та код із 6 цифр - прогрес збережеться у хмарі і буде на місці на будь-якому пристрої.</p>
+    <p id="loginIntro">Придумай ім'я та код із 6 цифр — прогрес збережеться в хмарі та буде на місці на будь-якому пристрої.</p>
     <input type="text" id="loginUsername" class="loginField" placeholder="Ім'я" autocomplete="off">
     <input type="password" id="loginPin" class="loginField" placeholder="Код із 6 цифр" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
     <p id="loginError" class="loginError"></p>
@@ -305,33 +312,39 @@
 (function(){
 "use strict";
 
-/* ============ CONFIG (все игровые данные — здесь, отдельно от логики) ============ */
+/* ============ CONFIG (всі ігрові дані — тут, окремо від логіки) ============ */
+// Кожна "тисяча" від 0 до 9000 влаштована однаково:
+//   X500 -> грошова нагорода 100 ₴, X000 -> грошова нагорода 200 ₴ (крім 10000 - це фінальний приз),
+//   решта кроків по 100 ₴ (X100,X200,X300,X400,X600,X700,X800,X900) -> бонусна скринька.
+function decadeBonusVals(base){ return [100,200,300,400,600,700,800,900].map(o=>base+o); }
 const BONUS_GROUPS = [
-  {vals:[3100,3200,3300,3400,3600,3700,3800,3900], label:"30 хвилин"},
-  {vals:[4100,4200,4300,4400,4600,4700,4800,4900], label:"1 година"},
-  {vals:[5100,5200,5300,5400,5600,5700,5800,5900], label:"1 година 30 хвилин"},
-  {vals:[6100,6200,6300,6400,6600,6700,6800,6900], label:"2 години"},
-  {vals:[7100,7200,7300,7400,7600,7700,7800,7900], label:"2 години 30 хвилин"},
-  {vals:[8100,8200,8300,8400,8600,8700,8800,8900], label:"3 години"},
-  {vals:[9100,9200,9300,9400,9600,9700,9800,9900], label:"3 години"}
+  {vals:decadeBonusVals(0),    label:"30 хвилин"},
+  {vals:decadeBonusVals(1000), label:"30 хвилин"},
+  {vals:decadeBonusVals(2000), label:"30 хвилин"},
+  {vals:decadeBonusVals(3000), label:"30 хвилин"},
+  {vals:decadeBonusVals(4000), label:"1 година"},
+  {vals:decadeBonusVals(5000), label:"1 година 30 хвилин"},
+  {vals:decadeBonusVals(6000), label:"2 години"},
+  {vals:decadeBonusVals(7000), label:"2 години 30 хвилин"},
+  {vals:decadeBonusVals(8000), label:"3 години"},
+  {vals:decadeBonusVals(9000), label:"3 години"}
 ];
+const DEFAULT_REWARD_POINTS = [];
+for(let base=0; base<10000; base+=1000){
+  DEFAULT_REWARD_POINTS.push({amount:base+500, reward:100});
+  DEFAULT_REWARD_POINTS.push({amount:base+1000, reward: base+1000===10000 ? 1000 : 200});
+}
 
 const CONFIG = {
-  startAmount: 3000,
+  startAmount: 0,
   goalAmount: 10000,
-  // Эти значения — только НАЧАЛЬНЫЕ значения по умолчанию.
-  // Реальные суммы редактируются в админ-панели и хранятся в state.settings.
-  defaultRewardPoints: [
-    {amount:3500, reward:100}, {amount:4000, reward:200}, {amount:4500, reward:100},
-    {amount:5000, reward:200}, {amount:5500, reward:100}, {amount:6000, reward:200},
-    {amount:6500, reward:100}, {amount:7000, reward:200}, {amount:7500, reward:100},
-    {amount:8000, reward:200}, {amount:8500, reward:100}, {amount:9000, reward:200},
-    {amount:9500, reward:100}, {amount:10000, reward:1000}
-  ],
+  // Ці значення — лише ПОЧАТКОВІ значення за замовчуванням.
+  // Реальні суми редагуються в адмін-панелі та зберігаються в state.settings.
+  defaultRewardPoints: DEFAULT_REWARD_POINTS,
   defaultBonusPoints: BONUS_GROUPS.flatMap(g=> g.vals.map(v=>({amount:v, minutesLabel:g.label}))),
   animDurationMs: 6000,
   adminPinDefault: "1234",
-  // декоративные объекты сцены — рисуются векторно (не эмодзи), координаты в долях ширины/высоты
+  // декоративні об'єкти сцени — малюються векторно (не емодзі), координати в частках ширини/висоти
   scenery: [
     {type:"mesa", x:0.05, y:0.09, scale:1.3},
     {type:"mesa", x:0.95, y:0.07, scale:1.15},
@@ -352,7 +365,7 @@ const CONFIG = {
     {type:"mesa", x:0.48, y:0.92, scale:1.05},
     {type:"cactus", x:0.14, y:0.9, scale:0.7}
   ],
-  // оригинальные, вдохновлённые аркадными "бойцовскими" играми чиби-персонажи (без копирования чужого дизайна)
+  // оригінальні мультяшні персонажі, натхненні аркадними "бійцівськими" іграми (без копіювання чужого дизайну)
   characters: [
     {id:"spark",  name:"Спаркс", bodyColor:"#ff9645", accent:"#2b2b2b", hair:"#2f3a1f", accessory:"goggles"},
     {id:"luna",   name:"Луна",   bodyColor:"#a586f0", accent:"#5b3fb0", hair:"#fdf6e3", accessory:"cathood"},
@@ -421,10 +434,10 @@ migrateState();
      2. Run supabase-setup.sql once in its SQL editor
      3. Paste your Project URL + anon public key below
 */
-  const CLOUD_CONFIG = {
-    supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
-    supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
-  };
+const CLOUD_CONFIG = {
+  supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
+  supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
+};
 function cloudConfigured(){
   return CLOUD_CONFIG.supabaseUrl.indexOf("YOUR-PROJECT")===-1 &&
          CLOUD_CONFIG.supabaseAnonKey.indexOf("YOUR-ANON")===-1 &&
@@ -768,7 +781,7 @@ function drawRewardMarker(g,rp,isNight){
   const claimed = !!state.claimedRewards[rp.amount];
   el("circle",{cx:p.x,cy:p.y,r:24,fill: reached? "#ffe066":"#fff8e6", stroke:"#e0672e","stroke-width":3.5,filter:"url(#pathShadow)"},g);
   el("text",{x:p.x,y:p.y+7,"text-anchor":"middle","font-size":19},g).textContent = claimed ? "✅" : "🎁";
-  const label = rp.amount.toLocaleString("ua-UA")+" ₴";
+  const label = rp.amount.toLocaleString("uk-UA")+" ₴";
   const pillW = Math.max(50, label.length*6.6);
   el("rect",{x:p.x-pillW/2,y:p.y+30,width:pillW,height:18,rx:9,fill:isNight?"#243452":"#fff","stroke":"#e0672e","stroke-width":1.6},g);
   el("text",{x:p.x,y:p.y+43,"text-anchor":"middle","font-size":10.5,"font-family":"Baloo 2","font-weight":800,fill:isNight?"#eef1f7":"#a8451c"},g).textContent = label;
@@ -779,12 +792,9 @@ function drawChestMarker(g,bp,isNight){
   const zone = zoneStyleForT(t);
   const reached = state.maxT >= t - 0.0005;
   const claimed = !!state.claimedBonuses[bp.amount];
-  el("circle",{cx:p.x,cy:p.y,r:13,fill: reached?zone.fillBright:zone.fillDim, stroke:zone.stroke,"stroke-width":2.5},g);
-  iconChest(g, p.x, p.y-1, 8);
-  if(claimed){ el("text",{x:p.x+9,y:p.y-8,"font-size":11},g).textContent = "✨"; }
-  // compact hundreds-shorthand ("34" for 3400) so the label fits inside the
-  // tiny coin without colliding with its neighbours along the path
-  el("text",{x:p.x, y:p.y+21, "text-anchor":"middle","font-size":8,"font-family":"Nunito","font-weight":700, fill:isNight?"#d7deef":"#5c4632"},g).textContent = Math.round(bp.amount/100);
+  el("circle",{cx:p.x,cy:p.y,r:10,fill: reached?zone.fillBright:zone.fillDim, stroke:zone.stroke,"stroke-width":2},g);
+  iconChest(g, p.x, p.y-0.5, 6.2);
+  if(claimed){ el("text",{x:p.x+7,y:p.y-6,"font-size":9},g).textContent = "✨"; }
 }
 function iconChest(g,cx,cy,r){
   const w=r*1.5, h=r*1.15;
@@ -912,7 +922,7 @@ function renderMapStatic(){
   applyCamera(pos, 1);
 
   const goalBadge = document.getElementById("goalBadgeVal");
-  if(goalBadge) goalBadge.textContent = state.settings.goalAmount.toLocaleString("ua-UA")+" ₴";
+  if(goalBadge) goalBadge.textContent = state.settings.goalAmount.toLocaleString("uk-UA")+" ₴";
 }
 
 function applyCamera(center, zoom){
@@ -979,7 +989,7 @@ function renderDotsGlowOnly(){
 
 /* ============ REWARD / BONUS LOGIC ============ */
 function todayStr(){
-  return new Date().toLocaleDateString("ua-UA",{day:"2-digit",month:"2-digit",year:"numeric"});
+  return new Date().toLocaleDateString("uk-UA",{day:"2-digit",month:"2-digit",year:"numeric"});
 }
 let pendingQueue = [];
 function collectCelebrations(newAmount){
@@ -1004,13 +1014,13 @@ function showNextCelebration(){
   if(item.type==="reward"){
     document.getElementById("rewardBig").textContent = "🎉";
     document.getElementById("rewardTitle").textContent = "Вітаємо!";
-    document.getElementById("rewardText").textContent = `Ти назбирав ${item.amount.toLocaleString("ua-UA")} ₴! Підійди до батьків і отримай нагороду ${item.reward.toLocaleString("ua-UA")} ₴.`;
+    document.getElementById("rewardText").textContent = `Ти накопичив ${item.amount.toLocaleString("uk-UA")} ₴! Підійди до батьків і отримай нагороду ${item.reward.toLocaleString("uk-UA")} ₴.`;
     const overlay = document.getElementById("rewardOverlay");
     overlay.classList.remove("hidden");
     overlay.dataset.amt = item.amount;
   }else{
-    document.getElementById("bonusText").textContent = `Ти назбирав ${item.amount.toLocaleString("ua-UA")} ₴ і знайшов скриню! Що обереш?`;
-    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " екрану";
+    document.getElementById("bonusText").textContent = `Ти накопичив ${item.amount.toLocaleString("uk-UA")} ₴ і знайшов скриньку! Що обереш?`;
+    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " екрана";
     const overlay = document.getElementById("bonusOverlay");
     overlay.classList.remove("hidden");
     overlay.dataset.amt = item.amount;
@@ -1036,8 +1046,8 @@ function claimBonus(choice){
     date: todayStr(), kind:"bonus", delta:0,
     icon: choice==="treat" ? "🍬" : "⏱",
     comment: choice==="treat"
-      ? `Скриня на ${amt.toLocaleString("ua-UA")} ₴ — вибрав смаколики`
-      : `Скриня на ${amt.toLocaleString("ua-UA")} ₴ — обрав екранний час: ${minutesLabel}`
+      ? `Скринька на ${amt.toLocaleString("uk-UA")} ₴ — обрав смаколик`
+      : `Скринька на ${amt.toLocaleString("uk-UA")} ₴ — обрав екранний час: ${minutesLabel}`
   });
   saveState();
   overlay.classList.add("hidden");
@@ -1061,7 +1071,7 @@ function showToast(msg){
 function renderHistory(){
   const list = document.getElementById("historyList");
   if(state.history.length===0){
-    list.innerHTML = '<div class="emptyhist">Поки що немає записів — віднови суму, щоб розпочати історію.</div>';
+    list.innerHTML = '<div class="emptyhist">Поки що немає записів — онови суму, щоб почати історію.</div>';
     return;
   }
   list.innerHTML = "";
@@ -1069,16 +1079,16 @@ function renderHistory(){
     const row = document.createElement("div");
     row.className = "hitem";
     const sign = h.delta>0 ? "+" : "";
-    row.innerHTML = `<span><span class="date">${h.date}</span><br>${h.comment}</span><span class="delta ${h.delta>=0?'plus':'minus'}">${sign}${h.delta.toLocaleString("ua-UA")} ₴</span>`;
+    row.innerHTML = `<span><span class="date">${h.date}</span><br>${h.comment}</span><span class="delta ${h.delta>=0?'plus':'minus'}">${sign}${h.delta.toLocaleString("uk-UA")} ₴</span>`;
     list.appendChild(row);
   });
 }
 
 function renderStats(){
-  document.getElementById("statAmount").textContent = state.amount.toLocaleString("ua-UA")+" ₴";
-  document.getElementById("statGoal").textContent = state.settings.goalAmount.toLocaleString("ua-UA")+" ₴";
+  document.getElementById("statAmount").textContent = state.amount.toLocaleString("uk-UA")+" ₴";
+  document.getElementById("statGoal").textContent = state.settings.goalAmount.toLocaleString("uk-UA")+" ₴";
   const nextReward = state.settings.rewardPoints.slice().sort((a,b)=>a.amount-b.amount).find(rp=>rp.amount>state.amount);
-  document.getElementById("statNext").textContent = nextReward ? (nextReward.amount-state.amount).toLocaleString("ua-UA")+" ₴" : "Ціль досягнута! 🎉";
+  document.getElementById("statNext").textContent = nextReward ? (nextReward.amount-state.amount).toLocaleString("uk-UA")+" ₴" : "Ціль досягнута! 🎉";
   document.getElementById("amountInput").value = state.amount;
 }
 
@@ -1094,7 +1104,7 @@ function applyNewAmount(newAmount, comment){
   if(newAmount === state.amount) return;
   const prev = state.amount;
   const delta = newAmount - prev;
-  state.history.push({date: new Date().toLocaleDateString("ua-UA",{day:"2-digit",month:"2-digit",year:"numeric"}), delta, comment: comment || (delta>0?"Поповнення":"Списання")});
+  state.history.push({date: new Date().toLocaleDateString("uk-UA",{day:"2-digit",month:"2-digit",year:"numeric"}), delta, comment: comment || (delta>0?"Поповнення":"Списання")});
   saveState();
   animateTo(newAmount, ()=>{
     renderAll();
@@ -1114,7 +1124,7 @@ document.querySelectorAll(".stepbtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     if(animating) return;
     const d = Number(btn.dataset.d);
-    applyNewAmount(state.amount + d, (d>0?"+":"")+d.toLocaleString("ua-UA")+" ₴ кнопкою");
+    applyNewAmount(state.amount + d, (d>0?"+":"")+d.toLocaleString("uk-UA")+" ₴ кнопкою");
   });
 });
 
@@ -1180,15 +1190,15 @@ document.getElementById("charCloseBtn").addEventListener("click", ()=>{
   document.getElementById("charOverlay").classList.add("hidden");
 });
 
-/* ============ ACHIEVEMENTS (простой список для MVP) ============ */
+/* ============ ACHIEVEMENTS (простий список для MVP) ============ */
 function computeAchievements(){
   const rp = state.settings.rewardPoints;
   const bp = state.settings.bonusPoints;
   const list = [
-    {id:"firstreward", name:"Першу нагороду отримано", done: rp.some(r=>state.claimedRewards[r.amount])},
+    {id:"firstreward", name:"Отримано першу нагороду", done: rp.some(r=>state.claimedRewards[r.amount])},
     {id:"halfway", name:"Пройдено половину шляху", done: state.maxT >= 0.5},
     {id:"allrewards", name:"Отримано всі грошові нагороди", done: rp.length>0 && rp.every(r=>state.claimedRewards[r.amount])},
-    {id:"allchests", name:"Відкрито всі скрині", done: bp.length>0 && bp.every(b=>state.claimedBonuses[b.amount])},
+    {id:"allchests", name:"Відкрито всі скриньки", done: bp.length>0 && bp.every(b=>state.claimedBonuses[b.amount])},
     {id:"goal", name:"Ціль досягнута", done: state.amount >= state.settings.goalAmount},
     {id:"mapdone", name:"Пройдено весь шлях на карті", done: state.maxT >= 0.999},
   ];
@@ -1244,14 +1254,31 @@ function renderAdminBonusRows(){
   const box = document.getElementById("bonusRows");
   box.innerHTML = "";
   state.settings.bonusPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(bp=>{
-    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${bp.amount}" step="1"><span class="apUnit">₴ →</span><input type="text" class="apLabel" value="${bp.minutesLabel}" placeholder="напр. 1 час"><button type="button" class="apDel">✕</button>`));
+    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${bp.amount}" step="1"><span class="apUnit">₴ →</span><input type="text" class="apLabel" value="${bp.minutesLabel}" placeholder="напр. 1 година"><button type="button" class="apDel">✕</button>`));
   });
 }
 document.getElementById("addRewardRow").addEventListener("click", ()=>{
-  document.getElementById("rewardRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сумма"><span class="apUnit">₴ →</span><input type="number" class="apRew" step="1" placeholder="приз"><span class="apUnit">₴</span><button type="button" class="apDel">✕</button>`));
+  document.getElementById("rewardRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сума"><span class="apUnit">₴ →</span><input type="number" class="apRew" step="1" placeholder="приз"><span class="apUnit">₴</span><button type="button" class="apDel">✕</button>`));
 });
 document.getElementById("addBonusRow").addEventListener("click", ()=>{
-  document.getElementById("bonusRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сумма"><span class="apUnit">₴ →</span><input type="text" class="apLabel" placeholder="напр. 1 час"><button type="button" class="apDel">✕</button>`));
+  document.getElementById("bonusRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сума"><span class="apUnit">₴ →</span><input type="text" class="apLabel" placeholder="напр. 1 година"><button type="button" class="apDel">✕</button>`));
+});
+
+document.getElementById("adminJumpStartBtn").addEventListener("click", ()=>{
+  const v = Math.round(Number(document.getElementById("adminJumpStart").value));
+  if(!Number.isFinite(v) || v < 0){ showToast("Введи коректну суму"); return; }
+  if(!confirm(`Встановити старт на ${v.toLocaleString("uk-UA")} ₴? Історія та прогрес буде очищено, а нагороди й скриньки до цієї суми більше не запропонуються.`)) return;
+  state.settings.startAmount = v;
+  state.amount = v;
+  state.maxT = 0;
+  state.history = [];
+  state.settings.rewardPoints.forEach(rp=>{ if(rp.amount <= v) state.claimedRewards[rp.amount] = true; });
+  state.settings.bonusPoints.forEach(bp=>{ if(bp.amount <= v) state.claimedBonuses[bp.amount] = {choice:"skipped"}; });
+  document.getElementById("adminStart").value = v;
+  document.getElementById("adminJumpStart").value = "";
+  saveState();
+  renderAll();
+  showToast("Стартову позицію встановлено");
 });
 
 document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
@@ -1284,9 +1311,9 @@ document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
   if(newPin){
     state.settings.adminPin = newPin;
     document.getElementById("adminNewPin").value = "";
-    showToast("Налаштування збережені, PIN оновлено");
+    showToast("Налаштування збережено, PIN оновлено");
   }else{
-    showToast("Налаштування збережені");
+    showToast("Налаштування збережено");
   }
 
   saveState();
@@ -1295,7 +1322,7 @@ document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
   renderAll();
 });
 document.getElementById("adminResetProgress").addEventListener("click", ()=>{
-  if(!confirm("Скинути прогрес: суму, історію та шлях на карті буде анульовано. Продовжити?")) return;
+  if(!confirm("Скинути прогрес: сума, історія та шлях на карті обнуляться. Продовжити?")) return;
   state.amount = state.settings.startAmount;
   state.maxT = 0;
   state.history = [];
@@ -1305,12 +1332,12 @@ document.getElementById("adminResetProgress").addEventListener("click", ()=>{
   showToast("Прогрес скинуто");
 });
 document.getElementById("adminResetRewards").addEventListener("click", ()=>{
-  if(!confirm("Скинути отримані нагороди та відкриті скрині?")) return;
+  if(!confirm("Скинути отримані нагороди та відкриті скриньки?")) return;
   state.claimedRewards = {};
   state.claimedBonuses = {};
   saveState();
   renderAll();
-  showToast("Нагороди та скрині скинуто");
+  showToast("Нагороди та скриньки скинуто");
 });
 document.getElementById("adminExport").addEventListener("click", ()=>{
   const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
@@ -1379,7 +1406,7 @@ async function attemptLogin(username, pin, silent){
   pin = (pin || "").trim();
   if(!silent) loginError.textContent = "";
   if(!username){
-    if(!silent) loginError.textContent = "Введи імʼя";
+    if(!silent) loginError.textContent = "Введи ім'я";
     return;
   }
   if(!/^\d{6}$/.test(pin)){
