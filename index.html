@@ -133,7 +133,9 @@
   .admin-note{font-size:12px;color:var(--ink-soft);margin-top:14px;line-height:1.5;}
   body.night .admin-note{color:#a9b6d0;}
   .apTable{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
-  .apRow{display:flex;gap:6px;align-items:center;}
+  .apRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .apRow .apAmt{flex:0 0 72px;}
+  .apRow .apOptA,.apRow .apOptB{flex:1 1 110px;min-width:90px;}
   .apRow input[type=number],.apRow input[type=text]{width:0;flex:1;padding:7px 8px;font-size:14px;border-radius:8px;border:2px solid var(--card-edge);}
   .apRow .apUnit{font-size:12px;color:var(--ink-soft);white-space:nowrap;flex:0 0 auto;}
   body.night .apRow .apUnit{color:#a9b6d0;}
@@ -221,8 +223,8 @@
     <h3>Містична скринька!</h3>
     <p id="bonusText">Ти знайшов скриньку! Що обереш?</p>
     <div class="choiceBtns">
-      <button id="bonusTreatBtn" class="choiceBtn treat">🍬 Смаколик</button>
-      <button id="bonusScreenBtn" class="choiceBtn screen">⏱ <span id="bonusScreenLabel">екран</span></button>
+      <button id="bonusOptionABtn" class="choiceBtn treat"></button>
+      <button id="bonusOptionBBtn" class="choiceBtn screen"></button>
     </div>
   </div>
 </div>
@@ -341,7 +343,7 @@ const CONFIG = {
   // Ці значення — лише ПОЧАТКОВІ значення за замовчуванням.
   // Реальні суми редагуються в адмін-панелі та зберігаються в state.settings.
   defaultRewardPoints: DEFAULT_REWARD_POINTS,
-  defaultBonusPoints: BONUS_GROUPS.flatMap(g=> g.vals.map(v=>({amount:v, minutesLabel:g.label}))),
+  defaultBonusPoints: BONUS_GROUPS.flatMap(g=> g.vals.map(v=>({amount:v, optionA:"🍬 Смаколик", optionB:"⏱ "+g.label+" екрана"}))),
   animDurationMs: 6000,
   adminPinDefault: "1234",
   // декоративні об'єкти сцени — малюються векторно (не емодзі), координати в частках ширини/висоти
@@ -393,7 +395,7 @@ function defaultState(){
       dayNightMode:"auto",
       characterId: CONFIG.characters[0].id,
       rewardPoints: CONFIG.defaultRewardPoints.map(r=>({amount:r.amount, reward:r.reward})),
-      bonusPoints: CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, minutesLabel:b.minutesLabel}))
+      bonusPoints: CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, optionA:b.optionA, optionB:b.optionB}))
     },
     amount: CONFIG.startAmount,
     maxT: 0,
@@ -407,7 +409,12 @@ function migrateState(){
   // fills in fields that older / freshly-fetched saves might be missing
   if(!state.settings) state.settings = {};
   if(!Array.isArray(state.settings.rewardPoints)) state.settings.rewardPoints = CONFIG.defaultRewardPoints.map(r=>({amount:r.amount, reward:r.reward}));
-  if(!Array.isArray(state.settings.bonusPoints)) state.settings.bonusPoints = CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, minutesLabel:b.minutesLabel}));
+  if(!Array.isArray(state.settings.bonusPoints)) state.settings.bonusPoints = CONFIG.defaultBonusPoints.map(b=>({amount:b.amount, optionA:b.optionA, optionB:b.optionB}));
+  // older saves stored a single "minutesLabel" with a hardcoded treat option — upgrade those rows in place
+  state.settings.bonusPoints = state.settings.bonusPoints.map(b=>{
+    if(b.optionA && b.optionB) return b;
+    return { amount:b.amount, optionA:"🍬 Смаколик", optionB: "⏱ " + (b.minutesLabel || "20 хвилин") + (String(b.minutesLabel||"").includes("екран") ? "" : " екрана") };
+  });
   if(!state.claimedBonuses) state.claimedBonuses = {};
   if(!state.claimedRewards) state.claimedRewards = {};
   if(!state.history) state.history = [];
@@ -1001,7 +1008,7 @@ function collectCelebrations(newAmount){
   });
   state.settings.bonusPoints.forEach(bp=>{
     if(newAmount >= bp.amount && !state.claimedBonuses[bp.amount]){
-      items.push({type:"bonus", amount:bp.amount, minutesLabel:bp.minutesLabel});
+      items.push({type:"bonus", amount:bp.amount, optionA:bp.optionA, optionB:bp.optionB});
     }
   });
   items.sort((a,b)=>a.amount-b.amount);
@@ -1020,11 +1027,11 @@ function showNextCelebration(){
     overlay.dataset.amt = item.amount;
   }else{
     document.getElementById("bonusText").textContent = `Ти накопичив ${item.amount.toLocaleString("uk-UA")} ₴ і знайшов скриньку! Що обереш?`;
-    document.getElementById("bonusScreenLabel").textContent = item.minutesLabel + " екрана";
+    document.getElementById("bonusOptionABtn").textContent = item.optionA;
+    document.getElementById("bonusOptionBBtn").textContent = item.optionB;
     const overlay = document.getElementById("bonusOverlay");
     overlay.classList.remove("hidden");
     overlay.dataset.amt = item.amount;
-    overlay.dataset.minutes = item.minutesLabel;
   }
 }
 document.getElementById("rewardClaimBtn").addEventListener("click", ()=>{
@@ -1040,14 +1047,12 @@ document.getElementById("rewardClaimBtn").addEventListener("click", ()=>{
 function claimBonus(choice){
   const overlay = document.getElementById("bonusOverlay");
   const amt = Number(overlay.dataset.amt);
-  const minutesLabel = overlay.dataset.minutes;
-  state.claimedBonuses[amt] = {choice, minutesLabel};
+  const label = choice==="A" ? document.getElementById("bonusOptionABtn").textContent : document.getElementById("bonusOptionBBtn").textContent;
+  state.claimedBonuses[amt] = {choice, label};
   state.history.push({
     date: todayStr(), kind:"bonus", delta:0,
-    icon: choice==="treat" ? "🍬" : "⏱",
-    comment: choice==="treat"
-      ? `Скринька на ${amt.toLocaleString("uk-UA")} ₴ — обрав смаколик`
-      : `Скринька на ${amt.toLocaleString("uk-UA")} ₴ — обрав екранний час: ${minutesLabel}`
+    icon: "🎁",
+    comment: `Скринька на ${amt.toLocaleString("uk-UA")} ₴ — обрав: ${label}`
   });
   saveState();
   overlay.classList.add("hidden");
@@ -1055,8 +1060,8 @@ function claimBonus(choice){
   renderAll();
   setTimeout(showNextCelebration, 300);
 }
-document.getElementById("bonusTreatBtn").addEventListener("click", ()=> claimBonus("treat"));
-document.getElementById("bonusScreenBtn").addEventListener("click", ()=> claimBonus("screen"));
+document.getElementById("bonusOptionABtn").addEventListener("click", ()=> claimBonus("A"));
+document.getElementById("bonusOptionBBtn").addEventListener("click", ()=> claimBonus("B"));
 
 function showToast(msg){
   const holder = document.getElementById("toastHolder");
@@ -1243,6 +1248,9 @@ function makeApRow(html){
   row.querySelector(".apDel").addEventListener("click", ()=> row.remove());
   return row;
 }
+function escAttr(s){
+  return String(s==null?"":s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 function renderAdminRewardRows(){
   const box = document.getElementById("rewardRows");
   box.innerHTML = "";
@@ -1254,14 +1262,14 @@ function renderAdminBonusRows(){
   const box = document.getElementById("bonusRows");
   box.innerHTML = "";
   state.settings.bonusPoints.slice().sort((a,b)=>a.amount-b.amount).forEach(bp=>{
-    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${bp.amount}" step="1"><span class="apUnit">₴ →</span><input type="text" class="apLabel" value="${bp.minutesLabel}" placeholder="напр. 1 година"><button type="button" class="apDel">✕</button>`));
+    box.appendChild(makeApRow(`<input type="number" class="apAmt" value="${bp.amount}" step="1"><span class="apUnit">₴ →</span><input type="text" class="apOptA" value="${escAttr(bp.optionA)}" placeholder="напр. Смаколик"><span class="apUnit">або</span><input type="text" class="apOptB" value="${escAttr(bp.optionB)}" placeholder="напр. 30 хв екрана"><button type="button" class="apDel">✕</button>`));
   });
 }
 document.getElementById("addRewardRow").addEventListener("click", ()=>{
   document.getElementById("rewardRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сума"><span class="apUnit">₴ →</span><input type="number" class="apRew" step="1" placeholder="приз"><span class="apUnit">₴</span><button type="button" class="apDel">✕</button>`));
 });
 document.getElementById("addBonusRow").addEventListener("click", ()=>{
-  document.getElementById("bonusRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сума"><span class="apUnit">₴ →</span><input type="text" class="apLabel" placeholder="напр. 1 година"><button type="button" class="apDel">✕</button>`));
+  document.getElementById("bonusRows").appendChild(makeApRow(`<input type="number" class="apAmt" step="1" placeholder="сума"><span class="apUnit">₴ →</span><input type="text" class="apOptA" placeholder="напр. Смаколик"><span class="apUnit">або</span><input type="text" class="apOptB" placeholder="напр. 30 хв екрана"><button type="button" class="apDel">✕</button>`));
 });
 
 document.getElementById("adminJumpStartBtn").addEventListener("click", ()=>{
@@ -1300,12 +1308,13 @@ document.getElementById("adminSaveSettings").addEventListener("click", ()=>{
   const bonusMap = new Map();
   document.querySelectorAll("#bonusRows .apRow").forEach(row=>{
     const amt = Math.round(Number(row.querySelector(".apAmt").value));
-    const label = row.querySelector(".apLabel").value.trim();
-    if(Number.isFinite(amt) && amt>0 && label){
-      bonusMap.set(amt, label);
+    const optionA = row.querySelector(".apOptA").value.trim();
+    const optionB = row.querySelector(".apOptB").value.trim();
+    if(Number.isFinite(amt) && amt>0 && optionA && optionB){
+      bonusMap.set(amt, {optionA, optionB});
     }
   });
-  state.settings.bonusPoints = Array.from(bonusMap, ([amount,minutesLabel])=>({amount,minutesLabel})).sort((a,b)=>a.amount-b.amount);
+  state.settings.bonusPoints = Array.from(bonusMap, ([amount,opts])=>({amount, optionA:opts.optionA, optionB:opts.optionB})).sort((a,b)=>a.amount-b.amount);
 
   const newPin = document.getElementById("adminNewPin").value.trim();
   if(newPin){
