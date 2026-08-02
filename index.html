@@ -441,10 +441,10 @@ migrateState();
      2. Run supabase-setup.sql once in its SQL editor
      3. Paste your Project URL + anon public key below
 */
-const CLOUD_CONFIG = {
-  supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
-  supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
-};
+  const CLOUD_CONFIG = {
+    supabaseUrl: "https://gsckendjuwzkwpshotsp.supabase.co",
+    supabaseAnonKey: "sb_publishable_IXZhzDrfnndvyP7S8qq3FA_noGr_P37"
+  };
 function cloudConfigured(){
   return CLOUD_CONFIG.supabaseUrl.indexOf("YOUR-PROJECT")===-1 &&
          CLOUD_CONFIG.supabaseAnonKey.indexOf("YOUR-ANON")===-1 &&
@@ -1276,12 +1276,24 @@ document.getElementById("adminJumpStartBtn").addEventListener("click", ()=>{
   const v = Math.round(Number(document.getElementById("adminJumpStart").value));
   if(!Number.isFinite(v) || v < 0){ showToast("Введи коректну суму"); return; }
   if(!confirm(`Встановити старт на ${v.toLocaleString("uk-UA")} ₴? Історія та прогрес буде очищено, а нагороди й скриньки до цієї суми більше не запропонуються.`)) return;
+
+  // undo any auto-skip marks left by a PREVIOUS jump-start (e.g. parent set
+  // 4000, then corrected it to 1000) — otherwise points between the old and
+  // new start stayed stuck as "already claimed" forever. Rewards/bonuses the
+  // child genuinely earned through play are never touched here.
+  Object.keys(state.claimedRewards).forEach(k=>{
+    if(state.claimedRewards[k] === "skipped") delete state.claimedRewards[k];
+  });
+  Object.keys(state.claimedBonuses).forEach(k=>{
+    if(state.claimedBonuses[k] && state.claimedBonuses[k].choice === "skipped") delete state.claimedBonuses[k];
+  });
+
   state.settings.startAmount = v;
   state.amount = v;
   state.maxT = 0;
   state.history = [];
-  state.settings.rewardPoints.forEach(rp=>{ if(rp.amount <= v) state.claimedRewards[rp.amount] = true; });
-  state.settings.bonusPoints.forEach(bp=>{ if(bp.amount <= v) state.claimedBonuses[bp.amount] = {choice:"skipped"}; });
+  state.settings.rewardPoints.forEach(rp=>{ if(rp.amount <= v && !state.claimedRewards[rp.amount]) state.claimedRewards[rp.amount] = "skipped"; });
+  state.settings.bonusPoints.forEach(bp=>{ if(bp.amount <= v && !state.claimedBonuses[bp.amount]) state.claimedBonuses[bp.amount] = {choice:"skipped"}; });
   document.getElementById("adminStart").value = v;
   document.getElementById("adminJumpStart").value = "";
   saveState();
